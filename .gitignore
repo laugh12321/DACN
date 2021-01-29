@@ -1,1 +1,4 @@
 .idea
+src/model/__pycache__
+src/evaluation/__pycache__
+src/utils/__pycache__
