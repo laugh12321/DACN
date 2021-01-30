@@ -10,7 +10,7 @@ Created on Jan 29, 2021
 """
 import os
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from typing import Dict
 
 import src.model.enums as enums
@@ -42,7 +42,7 @@ def train(data: Dict[str, np.ndarray],
 
     :param data: The data dictionary containing
         the subsets for training and validation.
-        First dimension of the dataset should be the number of samples.
+        First dimension of the datasets should be the number of samples.
     :param model_name: Name of the model, it serves as a key in the
         dictionary holding all functions returning models.
     :param dest_path: Path to where all experiment runs will be saved as
@@ -56,7 +56,7 @@ def train(data: Dict[str, np.ndarray],
         it is the size of samples per gradient step.
     :param epochs: Number of epochs for model to train.
     :param verbose: Verbosity mode used in training, (0, 1 or 2).
-    :param shuffle: Boolean indicating whether to shuffle dataset.
+    :param shuffle: Boolean indicating whether to shuffle datasets.
     :param patience: Number of epochs without improvement in order to
         stop the training phase.
     :param endmembers_path: Path to the endmembers matrix file,
@@ -65,8 +65,8 @@ def train(data: Dict[str, np.ndarray],
     :param seed: Seed for training reproducibility.
     """
     # Reproducibility:
-    tf.reset_default_graph()
-    tf.set_random_seed(seed=seed)
+    tf.compat.v1.reset_default_graph()
+    tf.compat.v1.set_random_seed(seed=seed)
     np.random.seed(seed=seed)
 
     model = _get_model(

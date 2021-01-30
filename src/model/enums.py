@@ -42,20 +42,3 @@ class SatelliteH5Keys(aenum.Constant):
 class DataStats(aenum.Constant):
     MIN = 'min'
     MAX = 'max'
-
-
-class NodeNames(aenum.Constant):
-    INPUT = 'input_node'
-    OUTPUT = 'output_node'
-
-
-class MLflowTags(aenum.Constant):
-    SPLIT = 'split'
-    FOLD = 'fold'
-    QUANTIZED = 'quantized'
-
-
-class Splits(aenum.Constant):
-    BALANCED = 'balanced'
-    IMBALANCED = 'imbalanced'
-    GRIDS = 'grids'

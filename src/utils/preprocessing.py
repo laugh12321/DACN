@@ -128,7 +128,7 @@ def train_val_test_split(data: np.ndarray, labels: np.ndarray,
     :param labels: Vector with corresponding labels
     :param train_size:  If float, should be between 0.0 and 1.0,
         If stratified = True, it represents percentage of each class to be extracted.
-        If float and stratified = False, it represents percentage of the whole dataset to be extracted with samples drawn randomly, regardless of their class.
+        If float and stratified = False, it represents percentage of the whole datasets to be extracted with samples drawn randomly, regardless of their class.
         If int and stratified = True, it represents number of samples to be drawn from each class.
         If int and stratified = False, it represents overall number of samples to be drawn regardless of their class, randomly.
         Defaults to 0.8
@@ -161,7 +161,7 @@ def _get_set_indices(size: Union[List, float, int],
                     if stratified = True, it represents percentage
                     of each class to be extracted.
                  If float and stratified = False, it represents
-                    percentage of the whole dataset to be extracted
+                    percentage of the whole datasets to be extracted
                     with samples drawn randomly, regardless of their class.
                  If int and stratified = True, it represents number of samples
                     to be drawn from each class.
@@ -183,7 +183,7 @@ def _(size: float, labels: np.ndarray) -> np.ndarray:
 
 
 @_get_set_indices.register(int)
-def _(size: int) -> np.ndarray:
+def _(size: int, labels: np.ndarray) -> np.ndarray:
     assert size >= 1
     train_indices = np.arange(size, dtype=int)
 

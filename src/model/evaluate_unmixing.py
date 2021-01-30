@@ -4,7 +4,7 @@
 Created on Jan 29, 2021
 
 @file: evaluate_unmixing.py
-@desc: Perform the inference of the unmixing models on the test dataset.
+@desc: Perform the inference of the unmixing models on the test datasets.
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """

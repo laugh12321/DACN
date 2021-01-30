@@ -4,7 +4,7 @@
 Created on Jan 29, 2021
 
 @file: transforms.py
-@desc: Module containing all the transformations that can be done on a dataset.
+@desc: Module containing all the transformations that can be done on a datasets.
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
@@ -40,7 +40,7 @@ class SpectralTransform(BaseTransform):
                  labels: np.ndarray) -> List[np.ndarray]:
         """
         Transform 1D samples along the spectral axis.
-        Only the spectral features are present for each sample in the dataset.
+        Only the spectral features are present for each sample in the datasets.
 
         :param samples: Input samples that will undergo transformation.
         :param labels: Class value for each samples.

@@ -10,9 +10,6 @@ split it into train, test and val sets and save them in .h5 file with
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
-import clize
-from clize.parameters import multi
-
 import src.utils.io as io
 import src.utils.utils as utils
 import src.utils.preprocessing as preprocessing
@@ -23,7 +20,7 @@ EXTENSION = 1
 def main(*,
          data_file_path: str,
          ground_truth_path: str,
-         train_size: ('train_size', multi(min=0)),
+         train_size: int or float,
          val_size: float = 0.1,
          background_label: int = 0,
          neighborhood_size: int = None,
@@ -35,7 +32,7 @@ def main(*,
     :param train_size: If float, should be between 0.0 and 1.0.
         If stratified = True, it represents percentage of each class to be extracted,
         If float and stratified = False, it represents percentage of the whole
-        dataset to be extracted with samples drawn randomly, regardless of their class.
+        datasets to be extracted with samples drawn randomly, regardless of their class.
         If int and stratified = True, it represents number of samples to be
         drawn from each class.
         If int and stratified = False, it represents overall number of samples
@@ -71,7 +68,3 @@ def main(*,
         preprocessing.train_val_test_split(data, labels, train_size, val_size, seed)
 
     return utils._build_data_dict(train_x, train_y, val_x, val_y, test_x, test_y)
-
-
-if __name__ == '__main__':
-    clize.run(main)

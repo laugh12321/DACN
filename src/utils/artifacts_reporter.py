@@ -55,7 +55,3 @@ def collect_artifacts_report(*,
     else:
         os.makedirs(dest_path, exist_ok=True)
         io.save_metrics(dest_path, stat_report, 'report.csv')
-
-
-if __name__ == '__main__':
-    clize.run(collect_artifacts_report)

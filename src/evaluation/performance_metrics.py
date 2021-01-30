@@ -16,6 +16,8 @@ from src.model.models import unmixing_rnn_supervised, \
     unmixing_pixel_based_dcae, unmixing_cube_based_dcae, \
     unmixing_cube_based_cnn, unmixing_pixel_based_cnn
 
+tf.compat.v1.disable_eager_execution()
+
 
 def convert_to_tensor(metric_function):
     def wrapper(y_true: np.ndarray, y_pred: np.ndarray):
@@ -23,7 +25,7 @@ def convert_to_tensor(metric_function):
             y_true = tf.cast(tf.convert_to_tensor(y_true), tf.float32)
         if not isinstance(y_pred, tf.Tensor):
             y_pred = tf.cast(tf.convert_to_tensor(y_pred), tf.float32)
-        with tf.Session() as session:
+        with tf.compat.v1.Session() as session:
             return metric_function(y_true=y_true,
                                    y_pred=y_pred).eval(session=session)
 
@@ -56,8 +58,8 @@ def spectral_information_divergence_loss(y_true: tf.Tensor,
                                            tf.keras.backend.epsilon(), 1), \
                      tf.keras.backend.clip(y_pred,
                                            tf.keras.backend.epsilon(), 1)
-    loss = tf.reduce_sum(y_true * tf.log(y_true / y_pred)) + \
-           tf.reduce_sum(y_pred * tf.log(y_pred / y_true))
+    loss = tf.reduce_sum(y_true * tf.math.log(y_true / y_pred)) + \
+           tf.reduce_sum(y_pred * tf.math.log(y_pred / y_true))
     return loss
 
 
