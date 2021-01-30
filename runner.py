@@ -7,9 +7,9 @@ Created on Jan 29, 2021
 @contact: laugh12321@vip.qq.com
 """
 import os
-import clize
 import tensorflow as tf
-from clize.parameters import multi
+
+from config.get_config import get_config
 
 from src.model import enums
 from src.utils.utils import parse_train_size, subsample_test_set
@@ -38,7 +38,7 @@ LEARNING_RATES = {
 def run_experiments(*,
                     data_file_path: str,
                     ground_truth_path: str = None,
-                    train_size: ('train_size', multi(min=0)),
+                    train_size: int or float,
                     val_size: float = 0.1,
                     sub_test_size: int = None,
                     channels_idx: int = -1,
@@ -86,7 +86,7 @@ def run_experiments(*,
         it is the size of samples per gradient step.
     :param epochs: Number of epochs for model to train.
     :param verbose: Verbosity mode used in training, (0, 1 or 2).
-    :param shuffle: Boolean indicating whether to shuffle dataset.
+    :param shuffle: Boolean indicating whether to shuffle datasets.
     :param patience: Number of epochs without improvement in order to
         stop the training phase.
     :param endmembers_path: Path to the endmembers matrix file,
@@ -150,4 +150,27 @@ def run_experiments(*,
 
 
 if __name__ == '__main__':
-    clize.run(run_experiments)
+    args = get_config(filename='./config/config.json')
+    print(args)
+    base_path = os.path.join(args.path, args.dataset)
+    data_file_path = os.path.join(base_path, args.dataset+'.npy')
+    ground_truth_path = os.path.join(base_path, args.dataset+'_gt.npy')
+    endmembers_path = os.path.join(base_path, args.dataset+'_m.npy')
+    if args.dataset == 'urban':
+        sample_size, n_classes = 162, 6
+    else:
+        sample_size, n_classes = 157, 4
+    run_experiments(data_file_path=data_file_path,
+                    ground_truth_path=ground_truth_path,
+                    endmembers_path=endmembers_path,
+                    dest_path=args.save_path,
+                    train_size=args.train_size,
+                    val_size=args.val_size,
+                    sub_test_size=args.test_size,
+                    model_name=args.model_name,
+                    sample_size=sample_size,
+                    n_classes=n_classes,
+                    batch_size=args.batch_size,
+                    epochs=args.epochs,
+                    verbose=args.verbose,
+                    patience=args.patience)
