@@ -9,9 +9,6 @@ Created on Jan 29, 2021
 @contact: laugh12321@vip.qq.com
 """
 import numpy as np
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from typing import Dict, List, Union
 
 from src.model import enums
@@ -157,18 +154,3 @@ def get_label_indices_per_class(labels, return_uniques: bool = True):
         return label_indices, unique_labels
     else:
         return label_indices
-
-
-def plot_training_curve(metrics_file: str,
-                        curve_names: List[str],
-                        y_limit: bool = True):
-    df = pd.read_csv(metrics_file)[curve_names]
-    sns.lineplot(data=df)
-    if y_limit:
-        plt.ylim(0, 1.5)
-    plt.show()
-
-
-def show_statistics(metrics_file: str):
-    df = pd.read_csv(metrics_file)
-    return df
