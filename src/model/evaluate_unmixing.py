@@ -22,7 +22,7 @@ from src.evaluation.time_metrics import timeit
 
 
 def evaluate(data,
-             model_path: str,
+             model_name: str,
              dest_path: str,
              neighborhood_size: int,
              batch_size: int,
@@ -30,25 +30,24 @@ def evaluate(data,
     """
     Function for evaluating the trained model for the unmixing problem.
 
-    :param model_path: Path to the model.
+    :param model_name: model name.
     :param data: The data dictionary containing the subset for testing.
-    :param dest_path: Directory in which to store the calculated metrics.
+    :param dest_path: Directory in which to store the calculated metrics,
+            and Path to the model.
     :param neighborhood_size: Size of the spatial patch.
     :param batch_size: Size of the batch for inference.
     :param endmembers_path: Path to the endmembers matrix file,
         containing the average reflectances for each endmember,
         i.e., the pure spectra.
     """
-    model_name = os.path.basename(model_path)
     model = tf.keras.models.load_model(
-        model_path, compile=True,
+        dest_path, compile=True,
         custom_objects={metric.__name__: metric for metric in
                         UNMIXING_TRAIN_METRICS[model_name]})
 
     test_dict = data[enums.Dataset.TEST]
 
-    min_, max_ = io.read_min_max(os.path.join(
-        os.path.dirname(model_path), 'min-max.csv'))
+    min_, max_ = io.read_min_max(os.path.join(dest_path, 'min-max.csv'))
 
     transformations = [transforms.MinMaxNormalize(min_=min_, max_=max_)]
     transformations += [t(**{'neighborhood_size': neighborhood_size}) for t

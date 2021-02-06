@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--val_size', type=float, default=0.1,
                         help='Represents the percentage of samples from the training set '
                              'to be extracted as a validation set.')
-    parser.add_argument('--model_name', type=str, default='unmixing_cube_based_dcae',
+    parser.add_argument('--model_names', nargs='+', type=str, default='unmixing_cube_based_dcae',
                         help='Name of the model, it serves as a key in the dictionary '
                              'holding all functions returning models.')
     parser.add_argument('--verbose', type=int, default=0,

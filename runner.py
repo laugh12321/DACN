@@ -7,8 +7,9 @@ Created on Jan 29, 2021
 @contact: laugh12321@vip.qq.com
 """
 import os
-import tensorflow as tf
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
+import tensorflow as tf
 from config.get_config import get_config
 
 from src.model import enums
@@ -16,9 +17,9 @@ from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
 from src.model.models import unmixing_pixel_based_dcae, \
+    unmixing_cube_based_dcae, \
     unmixing_pixel_based_cnn, \
-    unmixing_cube_based_cnn, \
-    unmixing_cube_based_dcae
+    unmixing_cube_based_cnn
 
 # Literature hyperparameters settings:
 NEIGHBORHOOD_SIZES = {
@@ -93,14 +94,9 @@ def run_experiments(*,
         containing the average reflectances for each endmember,
         i.e., the pure spectra.
     """
-
-    if dest_path is None:
-        dest_path = os.path.join(os.path.curdir, "temp_artifacts")
-
     for experiment_id in range(n_runs):
         experiment_dest_path = os.path.join(dest_path,
                                             '{}_{}'.format(enums.Experiment.EXPERIMENT, str(experiment_id)))
-
         os.makedirs(experiment_dest_path, exist_ok=True)
 
         # Apply default literature hyper parameters:
@@ -135,7 +131,7 @@ def run_experiments(*,
                              seed=experiment_id)
 
         evaluate_unmixing.evaluate(
-            model_path=os.path.join(experiment_dest_path, model_name),
+            model_name=model_name,
             data=data,
             dest_path=experiment_dest_path,
             neighborhood_size=neighborhood_size,
@@ -151,26 +147,38 @@ def run_experiments(*,
 
 if __name__ == '__main__':
     args = get_config(filename='./config/config.json')
-    print(args)
-    base_path = os.path.join(args.path, args.dataset)
-    data_file_path = os.path.join(base_path, args.dataset+'.npy')
-    ground_truth_path = os.path.join(base_path, args.dataset+'_gt.npy')
-    endmembers_path = os.path.join(base_path, args.dataset+'_m.npy')
-    if args.dataset == 'urban':
-        sample_size, n_classes = 162, 6
-    else:
-        sample_size, n_classes = 157, 4
-    run_experiments(data_file_path=data_file_path,
-                    ground_truth_path=ground_truth_path,
-                    endmembers_path=endmembers_path,
-                    dest_path=args.save_path,
-                    train_size=args.train_size,
-                    val_size=args.val_size,
-                    sub_test_size=args.test_size,
-                    model_name=args.model_name,
-                    sample_size=sample_size,
-                    n_classes=n_classes,
-                    batch_size=args.batch_size,
-                    epochs=args.epochs,
-                    verbose=args.verbose,
-                    patience=args.patience)
+
+    for model_name in args.model_names:
+        for i in range(len(args.dataset)):
+            dest_path = os.path.join(args.save_path,
+                                     '{}_{}'.format(str(model_name), str(args.dataset[i])))
+
+            base_path = os.path.join(args.path, args.dataset[i])
+            data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
+            ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
+
+            if "cnn" in model_name:
+                endmembers_path = None
+            else:
+                endmembers_path = os.path.join(base_path, args.dataset[i] + '_m.npy')
+
+            if args.dataset[i] == 'urban':
+                sample_size, n_classes = 162, 6
+            else:
+                sample_size, n_classes = 157, 4
+
+            run_experiments(data_file_path=data_file_path,
+                            ground_truth_path=ground_truth_path,
+                            endmembers_path=endmembers_path,
+                            dest_path=dest_path,
+                            train_size=args.train_size[i],
+                            sub_test_size=args.test_size[i],
+                            val_size=args.val_size,
+                            model_name=model_name,
+                            sample_size=sample_size,
+                            n_classes=n_classes,
+                            batch_size=args.batch_size,
+                            epochs=args.epochs,
+                            verbose=args.verbose,
+                            patience=args.patience,
+                            n_runs=args.n_runs)

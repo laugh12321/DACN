@@ -1,14 +1,15 @@
 {
   "path": "./datasets",
-  "dataset": "jasper",
+  "dataset": ["jasper", "urban"],
   "save_path": "./results",
-  "train_size": 0.7,
-  "test_size": 1000,
+  "train_size": [7500, 47000],
+  "test_size": [2500, 47249],
   "val_size": 0.1,
-  "model_name": "unmixing_pixel_based_cnn",
+  "model_names": ["unmixing_pixel_based_cnn", "unmixing_cube_based_cnn",
+    "unmixing_pixel_based_dcae", "unmixing_cube_based_dcae"],
   "verbose": 1,
   "batch_size": 256,
-  "epochs": 10,
-  "patience": 3,
-  "n_runs": 1
+  "epochs": 100,
+  "patience": 15,
+  "n_runs": 4
 }
