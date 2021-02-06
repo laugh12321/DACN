@@ -10,7 +10,6 @@ placed in the "experiments_path" directory.
 @contact: laugh12321@vip.qq.com
 """
 import os
-import clize
 import numpy as np
 
 import src.utils.io as io
