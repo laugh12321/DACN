@@ -12,9 +12,9 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict, List
 
-from src.model.models import unmixing_rnn_supervised, \
-    unmixing_pixel_based_dcae, unmixing_cube_based_dcae, \
-    unmixing_cube_based_cnn, unmixing_pixel_based_cnn
+from src.model.models import pixel_based_dcae, cube_based_dcae, \
+    pixel_based_cnn, cube_based_cnn, rnn_supervised, attention_pixel_based_dcae, \
+    attention_cube_based_dcae, attention_pixel_based_cnn, attention_cube_based_cnn
 
 tf.compat.v1.disable_eager_execution()
 
@@ -184,19 +184,29 @@ def cnn_rmse(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
 
 
 UNMIXING_TRAIN_METRICS = {
-    unmixing_pixel_based_dcae.__name__: [spectral_information_divergence_loss],
-    unmixing_cube_based_dcae.__name__: [spectral_information_divergence_loss],
+    pixel_based_dcae.__name__: [spectral_information_divergence_loss],
+    cube_based_dcae.__name__: [spectral_information_divergence_loss],
 
-    unmixing_pixel_based_cnn.__name__: [cnn_rmse,
+    pixel_based_cnn.__name__: [cnn_rmse,
+                               overall_rms_abundance_angle_distance,
+                               sum_per_class_rmse],
+    cube_based_cnn.__name__: [cnn_rmse,
+                              overall_rms_abundance_angle_distance,
+                              sum_per_class_rmse],
+
+    attention_pixel_based_dcae.__name__: [spectral_information_divergence_loss],
+    attention_cube_based_dcae.__name__: [spectral_information_divergence_loss],
+
+    attention_pixel_based_cnn.__name__: [cnn_rmse,
+                                         overall_rms_abundance_angle_distance,
+                                         sum_per_class_rmse],
+    attention_cube_based_cnn.__name__: [cnn_rmse,
                                         overall_rms_abundance_angle_distance,
                                         sum_per_class_rmse],
-    unmixing_cube_based_cnn.__name__: [cnn_rmse,
-                                       overall_rms_abundance_angle_distance,
-                                       sum_per_class_rmse],
 
-    unmixing_rnn_supervised.__name__: [cnn_rmse,
-                                       overall_rms_abundance_angle_distance,
-                                       sum_per_class_rmse]
+    rnn_supervised.__name__: [cnn_rmse,
+                              overall_rms_abundance_angle_distance,
+                              sum_per_class_rmse]
 }
 
 UNMIXING_TEST_METRICS = {
@@ -208,13 +218,19 @@ UNMIXING_TEST_METRICS = {
 }
 
 UNMIXING_LOSSES = {
-    unmixing_pixel_based_dcae.__name__: spectral_information_divergence_loss,
-    unmixing_cube_based_dcae.__name__: spectral_information_divergence_loss,
+    pixel_based_dcae.__name__: spectral_information_divergence_loss,
+    cube_based_dcae.__name__: spectral_information_divergence_loss,
 
-    unmixing_pixel_based_cnn.__name__: 'mse',
-    unmixing_cube_based_cnn.__name__: 'mse',
+    pixel_based_cnn.__name__: 'mse',
+    cube_based_cnn.__name__: 'mse',
 
-    unmixing_rnn_supervised.__name__: 'mse'
+    attention_pixel_based_dcae.__name__: spectral_information_divergence_loss,
+    attention_cube_based_dcae.__name__: spectral_information_divergence_loss,
+
+    attention_pixel_based_cnn.__name__: 'mse',
+    attention_cube_based_cnn.__name__: 'mse',
+
+    rnn_supervised.__name__: 'mse'
 }
 
 

@@ -16,23 +16,31 @@ from src.model import enums
 from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
-from src.model.models import unmixing_pixel_based_dcae, \
-    unmixing_cube_based_dcae, \
-    unmixing_pixel_based_cnn, \
-    unmixing_cube_based_cnn
+from src.model.models import pixel_based_dcae, cube_based_dcae, \
+    pixel_based_cnn, cube_based_cnn, attention_pixel_based_dcae, \
+    attention_cube_based_dcae, attention_pixel_based_cnn, attention_cube_based_cnn
 
 # Literature hyperparameters settings:
 NEIGHBORHOOD_SIZES = {
-    unmixing_cube_based_dcae.__name__: 5,
-    unmixing_cube_based_cnn.__name__: 3
+    cube_based_dcae.__name__: 5,
+    cube_based_cnn.__name__: 3,
+
+    attention_cube_based_dcae.__name__: 5,
+    attention_cube_based_cnn.__name__: 3
 }
 
 LEARNING_RATES = {
-    unmixing_pixel_based_dcae.__name__: 0.001,
-    unmixing_cube_based_dcae.__name__: 0.0005,
+    pixel_based_dcae.__name__: 0.001,
+    cube_based_dcae.__name__: 0.0005,
 
-    unmixing_pixel_based_cnn.__name__: 0.01,
-    unmixing_cube_based_cnn.__name__: 0.001
+    pixel_based_cnn.__name__: 0.01,
+    cube_based_cnn.__name__: 0.001,
+
+    attention_pixel_based_dcae.__name__: 0.001,
+    attention_cube_based_dcae.__name__: 0.0005,
+
+    attention_pixel_based_cnn.__name__: 0.01,
+    attention_cube_based_cnn.__name__: 0.001
 }
 
 

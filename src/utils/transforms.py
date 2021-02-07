@@ -13,9 +13,9 @@ import numpy as np
 from typing import List, Dict
 
 from src.model import enums
-from src.model.models import unmixing_pixel_based_dcae, \
-    unmixing_cube_based_dcae, unmixing_cube_based_cnn, \
-    unmixing_pixel_based_cnn, unmixing_rnn_supervised
+from src.model.models import pixel_based_dcae, cube_based_dcae, \
+    pixel_based_cnn, cube_based_cnn, rnn_supervised, attention_pixel_based_dcae, \
+    attention_cube_based_dcae, attention_pixel_based_cnn, attention_cube_based_cnn
 
 
 class BaseTransform(abc.ABC):
@@ -134,15 +134,25 @@ class ExtractCentralPixelSpectrumTransform(BaseTransform):
 
 
 UNMIXING_TRANSFORMS = {
-    unmixing_pixel_based_dcae.__name__:
+    pixel_based_dcae.__name__:
         [ExtractCentralPixelSpectrumTransform,
          SpectralTransform],
-    unmixing_cube_based_dcae.__name__:
+    cube_based_dcae.__name__:
         [ExtractCentralPixelSpectrumTransform,
          SpectralTransform],
 
-    unmixing_pixel_based_cnn.__name__: [SpectralTransform],
-    unmixing_cube_based_cnn.__name__: [SpectralTransform],
+    pixel_based_cnn.__name__: [SpectralTransform],
+    cube_based_cnn.__name__: [SpectralTransform],
 
-    unmixing_rnn_supervised.__name__: [RNNSpectralInputTransform]
+    attention_pixel_based_dcae.__name__:
+        [ExtractCentralPixelSpectrumTransform,
+         SpectralTransform],
+    attention_cube_based_dcae.__name__:
+        [ExtractCentralPixelSpectrumTransform,
+         SpectralTransform],
+
+    attention_pixel_based_cnn.__name__: [SpectralTransform],
+    attention_cube_based_cnn.__name__: [SpectralTransform],
+
+    rnn_supervised.__name__: [RNNSpectralInputTransform]
 }
