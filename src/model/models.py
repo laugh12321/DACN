@@ -239,15 +239,15 @@ def attention_pixel_based_cnn(n_classes: int, input_size: int,
                                input_shape=(1, 1, input_size, 1),
                                data_format='channels_last'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    # model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
-    #                                  activation='relu'))
-    model.add(Channel_attention())
+    model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
+                                     activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(tf.keras.layers.Flatten())
     model.add(tf.keras.layers.Dense(units=192, activation='relu'))
