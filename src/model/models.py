@@ -239,13 +239,13 @@ def attention_pixel_based_cnn(n_classes: int, input_size: int,
                                input_shape=(1, 1, input_size, 1),
                                data_format='channels_last'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
@@ -277,6 +277,7 @@ def attention_cube_based_cnn(n_classes: int, input_size: int,
     model.add(tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
                                      activation='relu'))
     model.add(tf.keras.layers.Dropout(rate=0.2))
+    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 4),
                                      activation='relu'))
     model.add(tf.keras.layers.Dropout(rate=0.2))
@@ -311,6 +312,7 @@ def attention_pixel_based_dcae(n_classes: int, input_size: int,
     model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 3),
                                      activation='relu'))
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 3),
                                      activation='relu'))
     model.add(tf.keras.layers.Flatten())
@@ -349,6 +351,7 @@ def attention_cube_based_dcae(n_classes: int, input_size: int,
                                      activation='relu'))
     model.add(tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 3),
                                      activation='relu'))
+    model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 3),
                                      activation='relu'))
     model.add(tf.keras.layers.Flatten())
@@ -365,23 +368,4 @@ def attention_cube_based_dcae(n_classes: int, input_size: int,
     # Freeze the last layer which must be equal to endmembers
     # and residual term (zero vector):
     model.layers[-1].trainable = False
-    return model
-
-
-def attention_rnn_supervised(n_classes: int, **kwargs) -> tf.keras.Sequential:
-    """
-
-    :param n_classes: Number of classes.
-    :param kwargs: Additional arguments.
-    :return: RNN model instance.
-    """
-    model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.GRU(units=8, input_shape=(kwargs['input_size'], 1),
-                            return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=32, return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=128, return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=512, return_sequences=False))
-
-    model.add(tf.keras.layers.Dense(n_classes, activation='softmax'))
     return model

@@ -21,7 +21,7 @@ class Channel_attention(tf.keras.layers.Layer):
     def __init__(self, **kwargs):
         super(Channel_attention, self).__init__(**kwargs)
 
-    def __call__(self, inputs):
+    def call(self, inputs):
         in_shp = inputs.get_shape().as_list()
 
         # first Batch
