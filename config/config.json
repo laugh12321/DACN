@@ -8,7 +8,7 @@
   "model_names": ["attention_pixel_based_cnn", "attention_cube_based_cnn",
     "attention_pixel_based_dcae", "attention_cube_based_dcae"],
   "verbose": 1,
-  "batch_size": 256,
+  "batch_size": 128,
   "epochs": 100,
   "patience": 15,
   "n_runs": 4
