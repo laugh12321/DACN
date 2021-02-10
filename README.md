@@ -1,8 +1,8 @@
 # Channel Attention Hyperspectral Unmixing
 
-Hyperspectral image unmixing of convolutional neural network based on channel attention
+Hyperspectral image unmixing of convolutional neural network based on channel attention.
 
-## Description
+## Descriptions
 
 <table>
     <tr>
@@ -24,11 +24,6 @@ Hyperspectral image unmixing of convolutional neural network based on channel at
 
 ```python
 class Channel_attention(tf.keras.layers.Layer):
-    """
-    3D implementation of Channel attention:
-    Fu, Jun, et al. "Dual attention network for scene segmentation."
-    Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2019.
-    """
 
     def __init__(self):
         super(Channel_attention, self).__init__()
@@ -57,8 +52,35 @@ class Channel_attention(tf.keras.layers.Layer):
         return outputs
 ```
 
-## Requirements
+## Prerequisites
 
 - Python 3.8
 - TensorFlow 2.3.0
 
+Recommend use conda create a virtual environment and to install dependencies using: `pip install -r requirements.txt`
+
+## Usage
+
+After setting the parameters in [`config/config.json`](https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/config/config.json), enter the following command in the terminal:
+
+```
+python run.py
+```
+
+<b>More Details:</b>
+
+Use `python run.py -h` to get more parameters setting details.
+
+## Dataset
+
+We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in datasets/
+
+<b>data.npy:</b> hyperspectral data file.
+
+<b>data_gt.npy:</b> ground truth file.
+
+<b>data_m.npy:</b> endmembers file.
+
+
+
+Update: Feb 10, 2021
