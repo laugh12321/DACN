@@ -244,6 +244,7 @@ def attention_pixel_based_cnn(n_classes: int, input_size: int,
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
                                      activation='relu'))
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
                                      activation='relu'))
@@ -310,6 +311,7 @@ def attention_pixel_based_dcae(n_classes: int, input_size: int,
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 3),
                                      activation='relu'))
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     model.add(Channel_attention())
     model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 3),
                                      activation='relu'))
