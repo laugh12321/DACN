@@ -10,7 +10,7 @@ Created on Jan 29, 2021
 """
 import os
 import numpy as np
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
 from typing import Dict
 
 import src.model.enums as enums
@@ -65,8 +65,6 @@ def train(data: Dict[str, np.ndarray],
     :param seed: Seed for training reproducibility.
     """
     # Reproducibility:
-    tf.compat.v1.reset_default_graph()
-    tf.compat.v1.set_random_seed(seed=seed)
     np.random.seed(seed=seed)
 
     model = _get_model(
