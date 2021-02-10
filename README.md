@@ -17,9 +17,10 @@ Hyperspectral image unmixing of convolutional neural network based on channel at
 
 ### Channel Attention Layer
 
-<center>
-    <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/figures/CA.png />
-</center>
+<div align="center">
+    <img src="https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/figures/CA.png" />
+</div> 
+
 
 ```python
 class Channel_attention(tf.keras.layers.Layer):
