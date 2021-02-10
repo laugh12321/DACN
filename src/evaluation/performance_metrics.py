@@ -16,8 +16,6 @@ from src.model.models import pixel_based_dcae, cube_based_dcae, \
     pixel_based_cnn, cube_based_cnn, rnn_supervised, attention_pixel_based_dcae, \
     attention_cube_based_dcae, attention_pixel_based_cnn, attention_cube_based_cnn
 
-tf.compat.v1.disable_eager_execution()
-
 
 def convert_to_tensor(metric_function):
     def wrapper(y_true: np.ndarray, y_pred: np.ndarray):
@@ -25,9 +23,7 @@ def convert_to_tensor(metric_function):
             y_true = tf.cast(tf.convert_to_tensor(y_true), tf.float32)
         if not isinstance(y_pred, tf.Tensor):
             y_pred = tf.cast(tf.convert_to_tensor(y_pred), tf.float32)
-        with tf.compat.v1.Session() as session:
-            return metric_function(y_true=y_true,
-                                   y_pred=y_pred).eval(session=session)
+        return metric_function(y_true=y_true, y_pred=y_pred)
 
     return wrapper
 
