@@ -9,18 +9,22 @@ Created on 2月 03, 2021
 @contact: laugh12321@vip.qq.com
 """
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 tf.config.run_functions_eagerly(True)
 
 
 class Channel_attention(tf.keras.layers.Layer):
 
-    def __init__(self):
-        super(Channel_attention, self).__init__()
+    def __init__(self, units, **kwargs):
+        self.units = units
+        super(Channel_attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.beta = self.add_weight(name='beta', shape=1, initializer='zeros', trainable=True)
+        self.beta = self.add_weight(name='beta',
+                                    shape=(self.units, ),
+                                    initializer='zeros',
+                                    trainable=True)
         super(Channel_attention, self).build(input_shape)
 
     def call(self, inputs):
@@ -42,14 +46,19 @@ class Channel_attention(tf.keras.layers.Layer):
 
 class Position_attention(tf.keras.layers.Layer):
 
-    def __init__(self):
-        super(Position_attention, self).__init__()
+    def __init__(self, filters, units, **kwargs):
+        self.units = units
+        self.filters = filters
+        super(Position_attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.query_conv = tf.keras.layers.Conv3D(filters=input_shape[4], kernel_size=1)
-        self.key_conv = tf.keras.layers.Conv3D(filters=input_shape[4], kernel_size=1)
-        self.value_conv = tf.keras.layers.Conv3D(filters=input_shape[4], kernel_size=1)
-        self.gamma = self.add_weight(name='gamma', shape=1, initializer='zeros', trainable=True)
+        self.query_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
+        self.key_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
+        self.value_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
+        self.gamma = self.add_weight(name='gamma',
+                                     shape=(self.units, ),
+                                     initializer='zeros',
+                                     trainable=True)
         super(Position_attention, self).build(input_shape)
 
     def call(self, inputs):
@@ -77,25 +86,26 @@ class Position_attention(tf.keras.layers.Layer):
 
 class Attention_Embedding(tf.keras.layers.Layer):
 
-    def __init__(self):
-        super(Attention_Embedding, self).__init__()
+    def __init__(self, filters, units, activation=None, rate=None, **kwargs):
+        self.units = units
+        self.filters = filters
+        self.activation = activation
+        self.dropout = tf.keras.layers.Dropout(rate)
+        super(Attention_Embedding, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.channel_conv = tf.keras.layers.Conv3D(filters=input_shape[4], kernel_size=(1, 1, 4),
-                                                   activation='relu')
-        self.position_conv = tf.keras.layers.Conv3D(filters=input_shape[4], kernel_size=(1, 1, 4),
-                                                    activation='relu')
-        self.channel_dropout = tf.keras.layers.Dropout(rate=0.2)
-        self.position_dropout = tf.keras.layers.Dropout(rate=0.2)
-        self.dropout = tf.keras.layers.Dropout(rate=0.2)
+        self.channel_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=(1, 1, 4),
+                                                   activation=self.activation)
+        self.position_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=(1, 1, 4),
+                                                    activation=self.activation)
         super(Attention_Embedding, self).build(input_shape)
 
     def call(self, inputs):
-        channel_conv = self.channel_conv(Channel_attention()(inputs))
-        channel_outputs = self.channel_dropout(channel_conv)
+        channel_conv = self.channel_conv(Channel_attention(units=1)(inputs))
+        channel_outputs = self.dropout(channel_conv)
 
-        position_conv = self.position_conv(Position_attention()(inputs))
-        position_outputs = self.position_dropout(position_conv)
+        position_conv = self.position_conv(Position_attention(filters=self.filters, units=1)(inputs))
+        position_outputs = self.dropout(position_conv)
 
         outputs = channel_outputs + position_outputs
         outputs = self.dropout(outputs)
