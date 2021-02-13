@@ -8,10 +8,7 @@ Created on 2月 03, 2021
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-tf.config.run_functions_eagerly(True)
 
 
 class Channel_attention(tf.keras.layers.Layer):
@@ -23,7 +20,7 @@ class Channel_attention(tf.keras.layers.Layer):
     def build(self, input_shape):
         self.beta = self.add_weight(name='beta',
                                     shape=(self.units, ),
-                                    initializer='zeros',
+                                    initializer='random_normal',
                                     trainable=True)
         super(Channel_attention, self).build(input_shape)
 
@@ -57,7 +54,7 @@ class Position_attention(tf.keras.layers.Layer):
         self.value_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
         self.gamma = self.add_weight(name='gamma',
                                      shape=(self.units, ),
-                                     initializer='zeros',
+                                     initializer='random_normal',
                                      trainable=True)
         super(Position_attention, self).build(input_shape)
 
