@@ -165,7 +165,7 @@ if __name__ == '__main__':
             data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
             ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
 
-            if "pixel" in model_name:
+            if "cnn" in model_name:
                 endmembers_path = None
             else:
                 endmembers_path = os.path.join(base_path, args.dataset[i] + '_m.npy')
