@@ -11,7 +11,7 @@ Created on Jan 29, 2021
 import sys
 import numpy as np
 import tensorflow as tf
-from src.model.attention import Channel_attention
+from src.model.attention import Channel_attention, Position_attention
 
 
 def _get_model(model_key: str, **kwargs):
@@ -28,8 +28,9 @@ def _get_model(model_key: str, **kwargs):
     return all_[model_key](**kwargs)
 
 
-def pixel_based_cnn(n_classes: int, input_size: int,
-                    **kwargs) -> tf.keras.Sequential:
+# def pixel_based_cnn(n_classes: int, input_size: int,
+#                     **kwargs) -> tf.keras.Sequential:
+def pixel_based_cnn(n_classes: int, input_size: int, **kwargs):
     """
     Model for pixel-based supervised hyperspectral unmixing proposed in
     the following publication (Chicago style citation):
@@ -43,26 +44,88 @@ def pixel_based_cnn(n_classes: int, input_size: int,
     :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
-    model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
-                               activation='relu',
-                               input_shape=(1, 1, input_size, 1),
-                               data_format='channels_last'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(units=192, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=150, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
+    # model = tf.keras.Sequential()
+    # model.add(
+    #     tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+    #                            activation='relu',
+    #                            input_shape=(1, 1, input_size, 1),
+    #                            data_format='channels_last'))
+    # model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
+    #                                  activation='relu'))
+    # model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
+    #                                  activation='relu'))
+    # model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
+    #                                  activation='relu'))
+    # model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # model.add(tf.keras.layers.Flatten())
+    # model.add(tf.keras.layers.Dense(units=192, activation='relu'))
+    # model.add(tf.keras.layers.Dense(units=150, activation='relu'))
+    # model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
+
+    input = tf.keras.layers.Input(shape=(1, 1, input_size, 1))
+
+    conv1 = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                   activation='relu',
+                                   data_format='channels_last')(input)
+
+    pam = Position_attention(filters=3)(conv1)
+    pam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(pam)
+    pam = tf.keras.layers.Dropout(0.2)(pam)
+    pam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(pam)
+
+    cam = Channel_attention()(conv1)
+    cam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(cam)
+    cam = tf.keras.layers.Dropout(0.2)(cam)
+    cam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(cam)
+
+    feature_sum = tf.keras.layers.add([pam, cam])
+    feature_sum = tf.keras.layers.Dropout(0.2)(feature_sum)
+    feature_sum = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                         padding='same',
+                                         use_bias=False,
+                                         kernel_initializer='he_normal',
+                                         activation='relu')(feature_sum)
+    merge = tf.keras.layers.concatenate([conv1, feature_sum])
+
+    # conv1_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(merge)
+
+    conv2 = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
+                                   activation='relu')(merge)
+    conv2_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv2)
+
+    conv3 = tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
+                                   activation='relu')(conv2_2)
+    conv3_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv3)
+
+    conv4 = tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
+                                   activation='relu')(conv3_2)
+    conv4_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv4)
+
+    flatten = tf.keras.layers.Flatten()(conv4_2)
+    dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
+    dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
+    dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
+
+    model = tf.keras.Model(inputs=input, outputs=dense_3)
     return model
 
 
@@ -232,27 +295,67 @@ def attention_pixel_based_cnn(n_classes: int, input_size: int,
     :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
-    model = tf.keras.Sequential()
-    model.add(
-        tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
-                               activation='relu',
-                               input_shape=(1, 1, input_size, 1),
-                               data_format='channels_last'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(Channel_attention())
-    model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(units=192, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=150, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
+    input = tf.keras.layers.Input(shape=(1, 1, input_size, 1))
+
+    conv1 = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                   activation='relu',
+                                   data_format='channels_last')(input)
+
+    pam = Position_attention(filters=3)(conv1)
+    pam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(pam)
+    pam = tf.keras.layers.Dropout(0.2)(pam)
+    pam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(pam)
+
+    cam = Channel_attention()(conv1)
+    cam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(cam)
+    cam = tf.keras.layers.Dropout(0.2)(cam)
+    cam = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                 padding='same',
+                                 use_bias=False,
+                                 kernel_initializer='he_normal',
+                                 activation='relu')(cam)
+
+    feature_sum = tf.keras.layers.add([pam, cam])
+    feature_sum = tf.keras.layers.Dropout(0.2)(feature_sum)
+    feature_sum = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 1),
+                                         padding='same',
+                                         use_bias=False,
+                                         kernel_initializer='he_normal',
+                                         activation='relu')(feature_sum)
+    merge = tf.keras.layers.concatenate([conv1, feature_sum])
+
+    # conv1_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(merge)
+
+    conv2 = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
+                                   activation='relu')(merge)
+    conv2_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv2)
+
+    conv3 = tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
+                                   activation='relu')(conv2_2)
+    conv3_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv3)
+
+    conv4 = tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
+                                   activation='relu')(conv3_2)
+    conv4_2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv4)
+
+    flatten = tf.keras.layers.Flatten()(conv4_2)
+    dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
+    dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
+    dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
+
+    model = tf.keras.Model(inputs=input, outputs=dense_3)
     return model
 
 
