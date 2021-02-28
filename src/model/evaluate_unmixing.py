@@ -16,7 +16,7 @@ import src.model.enums as enums
 from src.utils import io, transforms
 from src.utils.transforms import UNMIXING_TRANSFORMS
 from src.utils.utils import get_central_pixel_spectrum
-from src.evaluation.performance_metrics import \
+from src.evaluation.performance_metrics import UNMIXING_LOSSES,\
     calculate_unmixing_metrics, UNMIXING_TRAIN_METRICS
 from src.evaluation.time_metrics import timeit
 
@@ -54,10 +54,13 @@ def evaluate(data,
                         in UNMIXING_TRANSFORMS[model_name]]
     test_dict_transformed = transforms.apply_transformations(test_dict.copy(),
                                                              transformations)
+    l_model = tf.keras.Sequential()
     if 'dcae' in model_name:
-        model.pop()
+        # model.pop()
+        for layer in model.layers[:-1]:
+            l_model.add(layer)
 
-    predict = timeit(model.predict)
+    predict = timeit(l_model.predict)
     y_pred, inference_time = predict(
         test_dict_transformed[enums.Dataset.DATA],
         batch_size=batch_size)
