@@ -54,13 +54,10 @@ def evaluate(data,
                         in UNMIXING_TRANSFORMS[model_name]]
     test_dict_transformed = transforms.apply_transformations(test_dict.copy(),
                                                              transformations)
-    l_model = tf.keras.Sequential()
     if 'dcae' in model_name:
-        # model.pop()
-        for layer in model.layers[:-1]:
-            l_model.add(layer)
+        model.pop()
 
-    predict = timeit(l_model.predict)
+    predict = timeit(model.predict)
     y_pred, inference_time = predict(
         test_dict_transformed[enums.Dataset.DATA],
         batch_size=batch_size)
