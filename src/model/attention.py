@@ -4,15 +4,17 @@
 Created on 2月 03, 2021 
 
 @file: attention.py
-@desc: channel attention layer
+@desc: Double attention module
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
 import tensorflow as tf
 
+__all__ = ['Channel_attention', 'Position_attention']
+
 
 class Channel_attention(tf.keras.layers.Layer):
-
+    """ Channel attention module """
     def __init__(self,
                  gamma_initializer=tf.zeros_initializer(),
                  gamma_regularizer=None,
@@ -52,7 +54,7 @@ class Channel_attention(tf.keras.layers.Layer):
 
 
 class Position_attention(tf.keras.layers.Layer):
-
+    """ Position attention module """
     def __init__(self,
                  ratio = 8,
                  gamma_initializer=tf.zeros_initializer(),
@@ -68,12 +70,12 @@ class Position_attention(tf.keras.layers.Layer):
     def build(self, input_shape):
         super(Position_attention, self).build(input_shape)
         self.query_conv = tf.keras.layers.Conv3D(filters=input_shape[-1] // self.ratio, 
-                                                 kernel_size = 1, use_bias=False, 
+                                                 kernel_size=(1, 1, 1), use_bias=False, 
                                                  kernel_initializer='he_normal')
         self.key_conv = tf.keras.layers.Conv3D(filters=input_shape[-1] // self.ratio, 
-                                               kernel_size = 1, use_bias=False, 
+                                               kernel_size=(1, 1, 1), use_bias=False, 
                                                kernel_initializer='he_normal')
-        self.value_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1,
+        self.value_conv = tf.keras.layers.Conv3D(filters=input_shape[-1], kernel_size=(1, 1, 1),
                                                  use_bias=False, kernel_initializer='he_normal')
         self.gamma = self.add_weight(shape=(1,),
                                      initializer=self.gamma_initializer,
@@ -94,7 +96,6 @@ class Position_attention(tf.keras.layers.Layer):
                                             input_shape[4] // self.ratio))(self.key_conv(inputs))
         energy = tf.keras.backend.batch_dot(proj_key, proj_query)
         attention = tf.keras.activations.softmax(energy)
-        # attention = tf.keras.backend.permute_dimensions(attention, (0, 2, 1))
 
         proj_value = tf.keras.layers.Reshape((input_shape[1] * input_shape[2] * input_shape[3],
                                               input_shape[4]))(self.value_conv(inputs))
