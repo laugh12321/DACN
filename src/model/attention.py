@@ -54,22 +54,27 @@ class Channel_attention(tf.keras.layers.Layer):
 class Position_attention(tf.keras.layers.Layer):
 
     def __init__(self,
-                 filters,
+                 ratio = 8,
                  gamma_initializer=tf.zeros_initializer(),
                  gamma_regularizer=None,
                  gamma_constraint=None,
                  **kwargs):
         super(Position_attention, self).__init__(**kwargs)
-        self.filters = filters
+        self.ratio = ratio
         self.gamma_initializer = gamma_initializer
         self.gamma_regularizer = gamma_regularizer
         self.gamma_constraint = gamma_constraint
 
     def build(self, input_shape):
         super(Position_attention, self).build(input_shape)
-        self.query_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
-        self.key_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
-        self.value_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1)
+        self.query_conv = tf.keras.layers.Conv3D(filters=input_shape[-1] // self.ratio, 
+                                                 kernel_size = 1, use_bias=False, 
+                                                 kernel_initializer='he_normal')
+        self.key_conv = tf.keras.layers.Conv3D(filters=input_shape[-1] // self.ratio, 
+                                               kernel_size = 1, use_bias=False, 
+                                               kernel_initializer='he_normal')
+        self.value_conv = tf.keras.layers.Conv3D(filters=self.filters, kernel_size=1,
+                                                 use_bias=False, kernel_initializer='he_normal')
         self.gamma = self.add_weight(shape=(1,),
                                      initializer=self.gamma_initializer,
                                      name='gamma',
@@ -83,18 +88,18 @@ class Position_attention(tf.keras.layers.Layer):
         input_shape = inputs.get_shape().as_list()
 
         proj_query = tf.keras.layers.Reshape((input_shape[1] * input_shape[2] * input_shape[3],
-                                              input_shape[4]))(self.query_conv(inputs))
+                                              input_shape[4] // self.ratio))(self.query_conv(inputs))
         proj_query = tf.keras.backend.permute_dimensions(proj_query, (0, 2, 1))
         proj_key = tf.keras.layers.Reshape((input_shape[1] * input_shape[2] * input_shape[3],
-                                            input_shape[4]))(self.key_conv(inputs))
-        energy = tf.keras.backend.batch_dot(proj_query, proj_key)
+                                            input_shape[4] // self.ratio))(self.key_conv(inputs))
+        energy = tf.keras.backend.batch_dot(proj_key, proj_query)
         attention = tf.keras.activations.softmax(energy)
-        attention = tf.keras.backend.permute_dimensions(attention, (0, 2, 1))
+        # attention = tf.keras.backend.permute_dimensions(attention, (0, 2, 1))
 
         proj_value = tf.keras.layers.Reshape((input_shape[1] * input_shape[2] * input_shape[3],
                                               input_shape[4]))(self.value_conv(inputs))
 
-        outputs = tf.keras.backend.batch_dot(proj_value, attention)
+        outputs = tf.keras.backend.batch_dot(attention, proj_value)
         outputs = tf.keras.layers.Reshape((input_shape[1], input_shape[2], input_shape[3],
                                            input_shape[4]))(outputs)
         outputs = self.gamma * outputs + inputs
