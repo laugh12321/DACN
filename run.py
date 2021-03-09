@@ -146,7 +146,7 @@ if __name__ == '__main__':
         for i in range(len(args.dataset)):
             for neighborhood_size in NEIGHBORHOOD_SIZES[model_name]:
                 dest_path = os.path.join(args.save_path,
-                                        '{}_{}'.format(str(model_name), str(args.dataset[i])))
+                                        '{}_{}_{}'.format(str(neighborhood_size), str(model_name), str(args.dataset[i])))
 
                 base_path = os.path.join(args.path, args.dataset[i])
                 data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
