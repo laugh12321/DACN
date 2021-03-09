@@ -34,7 +34,6 @@ def train(data: Dict[str, np.ndarray],
           verbose: int,
           shuffle: bool,
           patience: int,
-          endmembers_path: str,
           seed: int):
     """
     Function for running experiments on various unmixing models,
@@ -59,9 +58,6 @@ def train(data: Dict[str, np.ndarray],
     :param shuffle: Boolean indicating whether to shuffle datasets.
     :param patience: Number of epochs without improvement in order to
         stop the training phase.
-    :param endmembers_path: Path to the endmembers matrix file,
-        containing the average reflectances for each endmember,
-        i.e., the pure spectra.
     :param seed: Seed for training reproducibility.
     """
     # Reproducibility:
@@ -71,9 +67,7 @@ def train(data: Dict[str, np.ndarray],
         model_key=model_name,
         **{'input_size': sample_size,
            'n_classes': n_classes,
-           'neighborhood_size': neighborhood_size,
-           'endmembers': np.load(
-               endmembers_path) if endmembers_path is not None else None})
+           'neighborhood_size': neighborhood_size})
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(lr=lr),

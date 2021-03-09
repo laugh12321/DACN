@@ -16,31 +16,23 @@ from src.model import enums
 from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
-from src.model.models import pixel_based_dcae, cube_based_dcae, \
-    pixel_based_cnn, cube_based_cnn, attention_pixel_based_dcae, \
-    attention_cube_based_dcae, attention_pixel_based_cnn, attention_cube_based_cnn
+from src.model.models import  pixel_based_cnn, cube_based_cnn, \
+    pixel_based_dacn, cube_based_dacn
 
 # Literature hyperparameters settings:
 NEIGHBORHOOD_SIZES = {
-    cube_based_dcae.__name__: 5,
     cube_based_cnn.__name__: 3,
 
-    attention_cube_based_dcae.__name__: 5,
-    attention_cube_based_cnn.__name__: 3
+    cube_based_dacn.__name__: 3
 }
 
 LEARNING_RATES = {
-    pixel_based_dcae.__name__: 0.001,
-    cube_based_dcae.__name__: 0.0005,
-
     pixel_based_cnn.__name__: 0.01,
     cube_based_cnn.__name__: 0.001,
 
-    attention_pixel_based_dcae.__name__: 0.001,
-    attention_cube_based_dcae.__name__: 0.0005,
 
-    attention_pixel_based_cnn.__name__: 0.01,
-    attention_cube_based_cnn.__name__: 0.001
+    pixel_based_dacn.__name__: 0.01,
+    cube_based_dacn.__name__: 0.001
 }
 
 
@@ -62,8 +54,7 @@ def run_experiments(*,
                     epochs: int = 100,
                     verbose: int = 2,
                     shuffle: bool = True,
-                    patience: int = 15,
-                    endmembers_path: str = None):
+                    patience: int = 15):
     """
     Function for running experiments on unmixing given a set of hyper parameters.
 
@@ -98,9 +89,6 @@ def run_experiments(*,
     :param shuffle: Boolean indicating whether to shuffle datasets.
     :param patience: Number of epochs without improvement in order to
         stop the training phase.
-    :param endmembers_path: Path to the endmembers matrix file,
-        containing the average reflectances for each endmember,
-        i.e., the pure spectra.
     """
     for experiment_id in range(n_runs):
         experiment_dest_path = os.path.join(dest_path,
@@ -135,7 +123,6 @@ def run_experiments(*,
                              verbose=verbose,
                              shuffle=shuffle,
                              patience=patience,
-                             endmembers_path=endmembers_path,
                              seed=experiment_id)
 
         evaluate_unmixing.evaluate(
@@ -143,8 +130,7 @@ def run_experiments(*,
             data=data,
             dest_path=experiment_dest_path,
             neighborhood_size=neighborhood_size,
-            batch_size=batch_size,
-            endmembers_path=endmembers_path)
+            batch_size=batch_size)
 
         tf.keras.backend.clear_session()
 
@@ -165,11 +151,6 @@ if __name__ == '__main__':
             data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
             ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
 
-            if "cnn" in model_name:
-                endmembers_path = None
-            else:
-                endmembers_path = os.path.join(base_path, args.dataset[i] + '_m.npy')
-
             if args.dataset[i] == 'urban':
                 sample_size, n_classes = 162, 6
             else:
@@ -177,7 +158,6 @@ if __name__ == '__main__':
 
             run_experiments(data_file_path=data_file_path,
                             ground_truth_path=ground_truth_path,
-                            endmembers_path=endmembers_path,
                             dest_path=dest_path,
                             train_size=args.train_size[i],
                             sub_test_size=args.test_size[i],

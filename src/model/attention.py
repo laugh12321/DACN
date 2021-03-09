@@ -4,13 +4,11 @@
 Created on 2月 03, 2021 
 
 @file: attention.py
-@desc: Double attention module
+@desc: Dual attention module
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
 import tensorflow as tf
-
-__all__ = ['Channel_attention', 'Position_attention']
 
 
 class Channel_attention(tf.keras.layers.Layer):
