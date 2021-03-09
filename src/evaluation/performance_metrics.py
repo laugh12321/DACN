@@ -27,6 +27,28 @@ def convert_to_tensor(metric_function):
     return wrapper
 
 
+def average_angle_spectral_mapper(y_true: tf.Tensor,
+                                  y_pred: tf.Tensor) -> tf.Tensor:
+    """
+    Calculate the average angle spectral mapper value.
+
+    :param y_true: Labels as two dimensional abundances
+        array of shape: [n_samples, n_classes] or original input pixel
+        and its reconstruction of shape: [n_samples, n_bands].
+    :param y_pred: Predicted abundances of shape: [n_samples, n_classes]
+        or original input pixel and
+        its reconstruction of shape: [n_samples, n_bands].
+    :return: The root-mean square abundance angle distance error.
+    """
+    numerator = tf.reduce_sum(tf.multiply(y_true, y_pred), 1)
+    y_true_len = tf.sqrt(tf.reduce_sum(tf.square(y_true), 1))
+    y_pred_len = tf.sqrt(tf.reduce_sum(tf.square(y_pred), 1))
+    denominator = tf.multiply(y_true_len, y_pred_len)
+    loss = tf.reduce_mean(tf.acos(
+        tf.clip_by_value(numerator / denominator, -1, 1)))
+    return loss
+
+
 def average_rmse(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """
     Calculate the average root-mean square error, which measures the 
