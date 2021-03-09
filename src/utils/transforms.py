@@ -137,8 +137,7 @@ UNMIXING_TRANSFORMS = {
     cube_based_cnn.__name__: [SpectralTransform],
 
     pixel_based_dacn.__name__: [SpectralTransform],
-    cube_based_dacn.__name__: [ExtractCentralPixelSpectrumTransform,
-                                        SpectralTransform],
+    cube_based_dacn.__name__: [SpectralTransform],
 
     rnn_supervised.__name__: [RNNSpectralInputTransform]
 }
