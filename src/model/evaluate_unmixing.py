@@ -14,11 +14,12 @@ import tensorflow as tf
 
 import src.model.enums as enums
 from src.utils import io, transforms
+from src.evaluation.time_metrics import timeit
 from src.utils.transforms import UNMIXING_TRANSFORMS
 from src.utils.utils import get_central_pixel_spectrum
-from src.evaluation.performance_metrics import UNMIXING_LOSSES,\
-    calculate_unmixing_metrics, UNMIXING_TRAIN_METRICS
-from src.evaluation.time_metrics import timeit
+from src.evaluation.performance_metrics import UNMIXING_TRAIN_METRICS,\
+    calculate_unmixing_metrics
+
 
 
 def evaluate(data,
