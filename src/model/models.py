@@ -11,7 +11,7 @@ Created on Jan 29, 2021
 import sys
 import numpy as np
 import tensorflow as tf
-from src.model.attention import Channel_attention, Position_attention
+from src.model.attention import Channel_attention, Position_attention, cbam_block
 
 
 def _get_model(model_key: str, **kwargs):
