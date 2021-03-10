@@ -23,7 +23,7 @@ from src.model.models import  pixel_based_cnn, cube_based_cnn, \
 NEIGHBORHOOD_SIZES = {
     cube_based_cnn.__name__: 3,
 
-    cube_based_dacn.__name__: [3, 5, 7, 9]
+    cube_based_dacn.__name__: 3
 }
 
 LEARNING_RATES = {
@@ -144,31 +144,29 @@ if __name__ == '__main__':
 
     for model_name in args.model_names:
         for i in range(len(args.dataset)):
-            for neighborhood_size in NEIGHBORHOOD_SIZES[model_name]:
-                dest_path = os.path.join(args.save_path,
-                                        '{}_{}_{}'.format(str(neighborhood_size), str(model_name), str(args.dataset[i])))
+            dest_path = os.path.join(args.save_path,
+                                    '{}_{}'.format(str(model_name), str(args.dataset[i])))
 
-                base_path = os.path.join(args.path, args.dataset[i])
-                data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
-                ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
+            base_path = os.path.join(args.path, args.dataset[i])
+            data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
+            ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
 
-                if args.dataset[i] == 'urban':
-                    sample_size, n_classes = 162, 6
-                else:
-                    sample_size, n_classes = 157, 4
+            if args.dataset[i] == 'urban':
+                sample_size, n_classes = 162, 6
+            else:
+                sample_size, n_classes = 157, 4
 
-                run_experiments(data_file_path=data_file_path,
-                                ground_truth_path=ground_truth_path,
-                                dest_path=dest_path,
-                                train_size=args.train_size[i],
-                                sub_test_size=args.test_size[i],
-                                neighborhood_size=neighborhood_size,
-                                val_size=args.val_size,
-                                model_name=model_name,
-                                sample_size=sample_size,
-                                n_classes=n_classes,
-                                batch_size=args.batch_size,
-                                epochs=args.epochs,
-                                verbose=args.verbose,
-                                patience=args.patience,
-                                n_runs=args.n_runs)
+            run_experiments(data_file_path=data_file_path,
+                            ground_truth_path=ground_truth_path,
+                            dest_path=dest_path,
+                            train_size=args.train_size[i],
+                            sub_test_size=args.test_size[i],
+                            val_size=args.val_size,
+                            model_name=model_name,
+                            sample_size=sample_size,
+                            n_classes=n_classes,
+                            batch_size=args.batch_size,
+                            epochs=args.epochs,
+                            verbose=args.verbose,
+                            patience=args.patience,
+                            n_runs=args.n_runs)
