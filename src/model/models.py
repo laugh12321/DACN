@@ -215,58 +215,28 @@ def cube_based_dacn(n_classes: int, input_size: int,
                                          kwargs['neighborhood_size'],
                                          input_size, 1))
 
-    conv1 = tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
-                                   activation='relu', padding='same',
-                                   kernel_initializer='he_normal',
-                                   data_format='channels_last')(input)
-    conv2 = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
+    conv1 = tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
+                                   padding='same', data_format='channels_last',
+                                   kernel_initializer='he_normal')(input)
+    conv1 = tf.keras.layers.BatchNormalization(axis=-1)(conv1)
+    conv1 = tf.keras.layers.ELU(alpha=1.0)(conv1)
+
+    conv2 = tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 5),
                                    padding='same', use_bias=False,
                                    kernel_initializer='he_normal',
-                                   activation='relu')(conv1)
+                                   activation='elu')(conv1)
+    pool2 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv2)
 
-    # POSITION ATTENTION MOUDLE
-    pam = Position_attention()(conv2)
-    pam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
-                                 activation='relu', padding='same',
-                                 kernel_initializer='he_normal')(pam)
-    pam = tf.keras.layers.Dropout(0.2)(pam)
-    pam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(pam)
-    # CHANNEL ATTENTION MOUDLE
-    cam = Channel_attention()(conv2)
-    cam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    cam = tf.keras.layers.Dropout(0.2)(cam)
-    cam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    # merge
-    feature_sum = tf.keras.layers.add([pam, cam])
-    feature_sum = tf.keras.layers.Dropout(0.2)(feature_sum)
-    feature_sum = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                         padding='same', use_bias=False,
-                                         kernel_initializer='he_normal',
-                                         activation='relu')(feature_sum)
-    merge = tf.keras.layers.concatenate([conv2, feature_sum])
+    # CONV ATTENTION MOUDLE
+    attention_block = cbam_block(pool2)
 
-    conv3 = tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
+    conv3 = tf.keras.layers.Conv3D(filters=256, kernel_size=(1, 1, 5),
                                    padding='same', use_bias=False,
                                    kernel_initializer='he_normal',
-                                   activation='relu')(merge)
+                                   activation='elu')(attention)
     pool3 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv3)
 
-    conv4 = tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 4),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(pool3)
-    pool4 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv4)
-
-    flatten = tf.keras.layers.Flatten()(pool4)
+    flatten = tf.keras.layers.Flatten()(pool3)
     dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
     dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
     dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
