@@ -138,31 +138,35 @@ def pixel_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Sequ
     """
     model = tf.keras.Sequential()
 
-    model.add(tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
+    model.add(tf.keras.layers.Conv3D(filters=4, kernel_size=(1, 1, 5),
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal',
                                      data_format='channels_last',
-                                     input_shape=(1, 1, input_size, 1),
-                                     activation='relu'))
-    model.add(tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4), 
+                                     input_shape=(1, 1, input_size, 1)))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=8, kernel_size=(1, 1, 4), 
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
-
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     # Convolutional Block Attention Module
     model.add(channel_attention())
     model.add(spatial_attention())
 
-    model.add(tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
+    model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
-    model.add(tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
     model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention())
+    model.add(spatial_attention())
 
     model.add(tf.keras.layers.Flatten())
     model.add(tf.keras.layers.Dense(units=192, activation='relu'))
@@ -184,31 +188,36 @@ def cube_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Seque
     model = tf.keras.Sequential()
 
     model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
-                                     activation='relu', padding='same',
+                                     padding='same', use_bias=False,
                                      kernel_initializer='he_normal',
                                      input_shape=(kwargs['neighborhood_size'],
                                                   kwargs['neighborhood_size'],
                                                   input_size, 1),
                                      data_format='channels_last'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
     model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
-
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
     # Convolutional Block Attention Module
     model.add(channel_attention())
     model.add(spatial_attention())
 
     model.add(tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
-    model.add(tf.keras.layers.Dropout(rate=0.2))
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
     model.add(tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 4),
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     activation='relu'))
-    model.add(tf.keras.layers.Dropout(rate=0.2))
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention(ratio=8))
+    model.add(spatial_attention())
 
     model.add(tf.keras.layers.Flatten())
     model.add(tf.keras.layers.Dense(units=192, activation='relu'))
