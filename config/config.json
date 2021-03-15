@@ -1,14 +1,14 @@
 {
   "path": "./datasets",
-  "dataset": ["jasper"],
+  "dataset": ["jasper", "urban"],
   "save_path": "./results",
-  "train_size": [7500],
-  "test_size": [2500],
+  "train_size": [7500, 47000],
+  "test_size": [2500, 47249],
   "val_size": 0.1,
-  "model_names": ["cube_based_dacn"],
+  "model_names": ["pixel_based_dacn", "cube_based_dacn"],
   "verbose": 1,
   "batch_size": 128,
-  "epochs": 100,
+  "epochs": 200,
   "patience": 15,
   "n_runs": 4
 }
