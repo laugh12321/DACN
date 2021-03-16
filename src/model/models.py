@@ -11,7 +11,7 @@ Created on Jan 29, 2021
 import sys
 import numpy as np
 import tensorflow as tf
-from src.model.attention import Channel_attention, Position_attention
+from src.model.attention import channel_attention, spatial_attention
 
 
 def _get_model(model_key: str, **kwargs):
@@ -126,7 +126,7 @@ def rnn_supervised(n_classes: int, **kwargs) -> tf.keras.Sequential:
 
 
 # ############################ attention ############################
-def pixel_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Model:
+def pixel_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Sequential:
     """
     Model for the hyperspectral unmixing which utilizes 
     a pixel-based Dual Attention Convolutional Network.
@@ -136,140 +136,92 @@ def pixel_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Mode
     :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
-    input = tf.keras.layers.Input(shape=(1, 1, input_size, 1))
+    model = tf.keras.Sequential()
 
-    conv1 = tf.keras.layers.Conv3D(filters=3, kernel_size=(1, 1, 5),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   data_format='channels_last',
-                                   activation='relu')(input)                       
-    conv2 = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4), 
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(conv1)
+    model.add(tf.keras.layers.Conv3D(filters=4, kernel_size=(1, 1, 5),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal',
+                                     data_format='channels_last',
+                                     input_shape=(1, 1, input_size, 1)))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=8, kernel_size=(1, 1, 4), 
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention())
+    model.add(spatial_attention())
 
-    # POSITION ATTENTION MOUDLE
-    pam = Position_attention(ratio=2)(conv2)
-    pam = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(pam)
-    pam = tf.keras.layers.Dropout(0.2)(pam)
-    pam = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(pam)
-    # CHANNEL ATTENTION MOUDLE
-    cam = Channel_attention()(conv2)
-    cam = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 4),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    cam = tf.keras.layers.Dropout(0.2)(cam)
-    cam = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    # merge
-    feature_sum = tf.keras.layers.add([pam, cam])
-    feature_sum = tf.keras.layers.Dropout(0.2)(feature_sum)
-    feature_sum = tf.keras.layers.Conv3D(filters=6, kernel_size=(1, 1, 2),
-                                         padding='same', use_bias=False,
-                                         kernel_initializer='he_normal',
-                                         activation='relu')(feature_sum)
-    merge = tf.keras.layers.concatenate([conv2, feature_sum])
+    model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention())
+    model.add(spatial_attention())
 
-    conv3 = tf.keras.layers.Conv3D(filters=12, kernel_size=(1, 1, 5),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(merge)
-    pool3 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv3)
-    
-    conv4 = tf.keras.layers.Conv3D(filters=24, kernel_size=(1, 1, 4),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(pool3)
-    pool4 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv4)
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(units=192, activation='relu'))
+    model.add(tf.keras.layers.Dense(units=150, activation='relu'))
+    model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
 
-    flatten = tf.keras.layers.Flatten()(pool4)
-    dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
-    dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
-    dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
-
-    model = tf.keras.Model(inputs=input, outputs=dense_3)
     return model
 
 
-def cube_based_dacn(n_classes: int, input_size: int,
-                             **kwargs) -> tf.keras.Model:
+def cube_based_dacn(n_classes: int, input_size: int, **kwargs) -> tf.keras.Sequential:
     """
     Model for the hyperspectral unmixing which utilizes 
     a cube-based Dual Attention Convolutional Network.
-
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
     :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
-    input = tf.keras.layers.Input(shape=(kwargs['neighborhood_size'],
-                                         kwargs['neighborhood_size'],
-                                         input_size, 1))
+    model = tf.keras.Sequential()
 
-    conv1 = tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
-                                   activation='relu', padding='same',
-                                   kernel_initializer='he_normal',
-                                   data_format='channels_last')(input)
-    conv2 = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(conv1)
+    model.add(tf.keras.layers.Conv3D(filters=16, kernel_size=(1, 1, 5),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal',
+                                     input_shape=(kwargs['neighborhood_size'],
+                                                  kwargs['neighborhood_size'],
+                                                  input_size, 1),
+                                     data_format='channels_last'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention())
+    model.add(spatial_attention())
 
-    # POSITION ATTENTION MOUDLE
-    pam = Position_attention()(conv2)
-    pam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
-                                 activation='relu', padding='same',
-                                 kernel_initializer='he_normal')(pam)
-    pam = tf.keras.layers.Dropout(0.2)(pam)
-    pam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(pam)
-    # CHANNEL ATTENTION MOUDLE
-    cam = Channel_attention()(conv2)
-    cam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 4),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    cam = tf.keras.layers.Dropout(0.2)(cam)
-    cam = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                 padding='same', use_bias=False,
-                                 kernel_initializer='he_normal',
-                                 activation='relu')(cam)
-    # merge
-    feature_sum = tf.keras.layers.add([pam, cam])
-    feature_sum = tf.keras.layers.Dropout(0.2)(feature_sum)
-    feature_sum = tf.keras.layers.Conv3D(filters=32, kernel_size=(1, 1, 2),
-                                         padding='same', use_bias=False,
-                                         kernel_initializer='he_normal',
-                                         activation='relu')(feature_sum)
-    merge = tf.keras.layers.concatenate([conv2, feature_sum])
+    model.add(tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LayerNormalization(axis=-2))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 4),
+                                     padding='same', use_bias=False,
+                                     kernel_initializer='he_normal'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2)))
+    # Convolutional Block Attention Module
+    model.add(channel_attention(ratio=8))
+    model.add(spatial_attention())
 
-    conv3 = tf.keras.layers.Conv3D(filters=64, kernel_size=(1, 1, 5),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(merge)
-    pool3 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv3)
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(units=192, activation='relu'))
+    model.add(tf.keras.layers.Dense(units=150, activation='relu'))
+    model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
 
-    conv4 = tf.keras.layers.Conv3D(filters=128, kernel_size=(1, 1, 4),
-                                   padding='same', use_bias=False,
-                                   kernel_initializer='he_normal',
-                                   activation='relu')(pool3)
-    pool4 = tf.keras.layers.MaxPool3D(pool_size=(1, 1, 2))(conv4)
-
-    flatten = tf.keras.layers.Flatten()(pool4)
-    dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
-    dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
-    dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
-
-    model = tf.keras.Model(inputs=input, outputs=dense_3)
     return model

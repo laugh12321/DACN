@@ -145,7 +145,7 @@ if __name__ == '__main__':
     for model_name in args.model_names:
         for i in range(len(args.dataset)):
             dest_path = os.path.join(args.save_path,
-                                     '{}_{}'.format(str(model_name), str(args.dataset[i])))
+                                    '{}_{}'.format(str(model_name), str(args.dataset[i])))
 
             base_path = os.path.join(args.path, args.dataset[i])
             data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')

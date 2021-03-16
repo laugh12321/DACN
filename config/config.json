@@ -8,7 +8,7 @@
   "model_names": ["pixel_based_dacn", "cube_based_dacn"],
   "verbose": 1,
   "batch_size": 128,
-  "epochs": 100,
+  "epochs": 200,
   "patience": 15,
   "n_runs": 4
 }
