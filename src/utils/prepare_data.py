@@ -22,9 +22,8 @@ def main(*,
          ground_truth_path: str,
          train_size: int or float,
          val_size: float = 0.1,
-         background_label: int = 0,
          neighborhood_size: int = None,
-         channels_idx: int = 0,
+         channels_idx: int = -1,
          seed: int = 0):
     """
     :param data_file_path: Path to the data file. Supported types are: .npy.
@@ -44,7 +43,6 @@ def main(*,
         percentage of each class from the training set
         to be extracted as a validation set.
         Defaults to 0.1.
-    :param background_label: Label indicating the background in GT file.
     :param neighborhood_size: Neighborhood size of the pixel to extract along
         with its spectral bands. Use only if you are training 2D or 3D
         convolutional model.
@@ -60,7 +58,7 @@ def main(*,
         data, labels = preprocessing.reshape_cube_to_2d_samples(data, labels, channels_idx)
     else:
         data, labels = preprocessing.reshape_cube_to_3d_samples(
-            data, labels, neighborhood_size, background_label, channels_idx)
+            data, labels, neighborhood_size, channels_idx)
 
     data, labels = preprocessing.remove_nan_samples(data, labels)
 

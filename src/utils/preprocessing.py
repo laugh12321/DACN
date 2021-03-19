@@ -66,7 +66,6 @@ def get_padded_cube(data: np.ndarray, padding_size: int) -> np.ndarray:
 def reshape_cube_to_3d_samples(data: np.ndarray,
                                labels: np.ndarray,
                                neighborhood_size: int = 5,
-                               background_label: int = 0,
                                channels_idx: int = 0) -> \
         Tuple[np.ndarray, np.ndarray]:
     """
@@ -77,7 +76,6 @@ def reshape_cube_to_3d_samples(data: np.ndarray,
     :param data: Data passed as array.
     :param labels: Labels passed as array.
     :param neighborhood_size: Length of the spatial patch.
-    :param background_label: Label to filter out the background.
     :param channels_idx: Index of the channels.
     :rtype: Tuple of data and labels reshaped to 3D format.
     """

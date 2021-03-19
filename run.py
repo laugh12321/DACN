@@ -28,7 +28,7 @@ NEIGHBORHOOD_SIZES = {
 
 LEARNING_RATES = {
     pixel_based_cnn.__name__: 0.01,
-    cube_based_cnn.__name__: 0.001,
+    cube_based_cnn.__name__: 0.0005,
 
 
     pixel_based_dacn.__name__: 0.01,
@@ -42,9 +42,8 @@ def run_experiments(*,
                     train_size: int or float,
                     val_size: float = 0.1,
                     sub_test_size: int = None,
-                    channels_idx: int = -1,
                     neighborhood_size: int = None,
-                    n_runs: int = 1,
+                    n_runs: int = 4,
                     model_name: str,
                     dest_path: str = None,
                     sample_size: int,
@@ -52,7 +51,7 @@ def run_experiments(*,
                     lr: float = None,
                     batch_size: int = 256,
                     epochs: int = 100,
-                    verbose: int = 2,
+                    verbose: int = 1,
                     shuffle: bool = True,
                     patience: int = 15):
     """
@@ -71,7 +70,6 @@ def run_experiments(*,
     :param sub_test_size: Number of pixels to subsample the test set
         instead of performing the inference on all
         samples that are not in the training set.
-    :param channels_idx: Index specifying the channels position in the provided data.
     :param neighborhood_size: Size of the spatial patch.
     :param n_runs: Number of total experiment runs.
     :param model_name: Name of the model, it serves as a key in the
@@ -101,16 +99,16 @@ def run_experiments(*,
         if lr is None and model_name in LEARNING_RATES:
             lr = LEARNING_RATES[model_name]
 
+        # Prepare data:
         data = prepare_data.main(data_file_path=data_file_path,
                                  ground_truth_path=ground_truth_path,
                                  train_size=parse_train_size(train_size),
                                  val_size=val_size,
-                                 background_label=-1,
-                                 channels_idx=channels_idx,
                                  neighborhood_size=neighborhood_size,
                                  seed=experiment_id)
         if sub_test_size is not None:
             subsample_test_set(data[enums.Dataset.TEST], sub_test_size)
+        
         train_unmixing.train(model_name=model_name,
                              dest_path=experiment_dest_path,
                              data=data,
