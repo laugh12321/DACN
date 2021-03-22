@@ -99,16 +99,18 @@ def run_experiments(*,
         if lr is None and model_name in LEARNING_RATES:
             lr = LEARNING_RATES[model_name]
 
-        # Prepare data:
+        # Prepare data for unmixing:
         data = prepare_data.main(data_file_path=data_file_path,
                                  ground_truth_path=ground_truth_path,
                                  train_size=parse_train_size(train_size),
                                  val_size=val_size,
                                  neighborhood_size=neighborhood_size,
                                  seed=experiment_id)
+        # Subsample the test set to constitute a constant size:                        
         if sub_test_size is not None:
             subsample_test_set(data[enums.Dataset.TEST], sub_test_size)
         
+        # Train the model:
         train_unmixing.train(model_name=model_name,
                              dest_path=experiment_dest_path,
                              data=data,
@@ -122,14 +124,13 @@ def run_experiments(*,
                              shuffle=shuffle,
                              patience=patience,
                              seed=experiment_id)
-
+        # Evaluate the model:
         evaluate_unmixing.evaluate(
             model_name=model_name,
             data=data,
             dest_path=experiment_dest_path,
             neighborhood_size=neighborhood_size,
             batch_size=batch_size)
-
         tf.keras.backend.clear_session()
 
     artifacts_reporter.collect_artifacts_report(
