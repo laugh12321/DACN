@@ -31,8 +31,8 @@ LEARNING_RATES = {
     cube_based_cnn.__name__: 0.0005,
 
 
-    pixel_based_dacn.__name__: 0.01,
-    cube_based_dacn.__name__: 0.001
+    pixel_based_dacn.__name__: 3e-3,
+    cube_based_dacn.__name__: 9e-4
 }
 
 
