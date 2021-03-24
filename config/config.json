@@ -5,7 +5,7 @@
   "train_size": [7500, 47000],
   "test_size": [2500, 47249],
   "val_size": 0.1,
-  "model_names": ["pixel_based_dacn", "cube_based_dacn"],
+  "model_names": ["pixel_based_cnn", "cube_based_cnn", "pixel_based_dacn", "cube_based_dacn"],
   "verbose": 1,
   "batch_size": 128,
   "epochs": 200,
