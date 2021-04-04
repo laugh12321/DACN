@@ -148,15 +148,15 @@ if __name__ == '__main__':
     args = get_config(filename='./config/config.json')
 
     for model_name in args.model_names:
-        for i in range(len(args.dataset)):
+        for data_name in args.dataset:
             dest_path = os.path.join(args.save_path,
-                                    '{}_{}'.format(str(model_name), str(args.dataset[i])))
+                                    '{}_{}'.format(str(model_name), str(data_name)))
 
-            base_path = os.path.join(args.path, args.dataset[i])
-            data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
-            ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
+            base_path = os.path.join(args.path, data_name)
+            data_file_path = os.path.join(base_path, data_name + '.npy')
+            ground_truth_path = os.path.join(base_path, data_name + '_gt.npy')
 
-            if args.dataset[i] == 'urban':
+            if data_name == 'urban':
                 sample_size, n_classes = 162, 6
             else:
                 sample_size, n_classes = 157, 4
@@ -164,8 +164,7 @@ if __name__ == '__main__':
             run_experiments(data_file_path=data_file_path,
                             ground_truth_path=ground_truth_path,
                             dest_path=dest_path,
-                            train_size=args.train_size[i],
-                            sub_test_size=args.test_size[i],
+                            train_size=args.train_size,
                             val_size=args.val_size,
                             model_name=model_name,
                             sample_size=sample_size,
