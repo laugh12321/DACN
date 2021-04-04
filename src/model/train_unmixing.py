@@ -92,7 +92,7 @@ def train(data: Dict[str, np.ndarray],
     min_, max_ = data[enums.DataStats.MIN], data[enums.DataStats.MAX]
 
     transformations = [transforms.MinMaxNormalize(min_=min_, max_=max_)]
-    transformations += [UNMIXING_TRANSFORMS[model_name]]
+    transformations += [t() for t in UNMIXING_TRANSFORMS[model_name]]
 
     train_dict = transforms.apply_transformations(train_dict, transformations)
     val_dict = transforms.apply_transformations(val_dict, transformations)

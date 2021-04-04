@@ -45,7 +45,7 @@ def evaluate(data,
     min_, max_ = io.read_min_max(os.path.join(dest_path, 'min-max.csv'))
 
     transformations = [transforms.MinMaxNormalize(min_=min_, max_=max_)]
-    transformations += [UNMIXING_TRANSFORMS[model_name]]
+    transformations += [t() for t in UNMIXING_TRANSFORMS[model_name]]
     test_dict_transformed = transforms.apply_transformations(test_dict.copy(),
                                                              transformations)
 

@@ -40,7 +40,7 @@ LEARNING_RATES = {
     pixel_based_cnn.__name__: 0.01,
 
     pixel_based_fnn.__name__: 0.0001,
-    
+
     pixel_based_dacn.__name__: 3e-3
 }
 
@@ -56,6 +56,7 @@ def run_experiments(*,
                     dest_path: str = None,
                     sample_size: int,
                     n_classes: int,
+                    reshape: bool = None,
                     lr: float = None,
                     batch_size: int = 256,
                     epochs: int = 100,
