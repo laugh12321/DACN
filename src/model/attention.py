@@ -8,129 +8,82 @@ Created on 2月 03, 2021
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
-from tensorflow.keras import backend as K
-from tensorflow.keras.activations import sigmoid
-from tensorflow.keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D, \
-    Reshape, Dense, multiply, Permute, Concatenate, Conv2D, Add, Activation, Lambda
+import tensorflow as tf
 
 
-def attach_attention_module(net, attention_module):
-  if attention_module == 'se_block': # SE_block
-    net = se_block(net)
-  elif attention_module == 'cbam_block': # CBAM_block
-    net = cbam_block(net)
-  else:
-    raise Exception("'{}' is not supported attention module!".format(attention_module))
+class channel_attention(tf.keras.layers.Layer):
+    """ channel attention module """
+    def __init__(self, ratio=8, **kwargs):
+        self.ratio = ratio
+        super(channel_attention, self).__init__(**kwargs)
 
-  return net
+    def build(self, input_shape):
+        channel = input_shape[-1]
+        self.shared_layer_one = tf.keras.layers.Dense(channel // self.ratio,
+                                                      activation='relu',
+                                                      kernel_initializer='he_normal',
+                                                      use_bias=True,
+                                                      bias_initializer='zeros')
+        self.shared_layer_two = tf.keras.layers.Dense(channel,
+                                                      kernel_initializer='he_normal',
+                                                      use_bias=True,
+                                                      bias_initializer='zeros')
+        super(channel_attention, self).build(input_shape)
 
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
-def se_block(input_feature, ratio=8):
-	"""Contains the implementation of Squeeze-and-Excitation(SE) block.
-	As described in https://arxiv.org/abs/1709.01507.
-	"""
-	
-	channel_axis = 1 if K.image_data_format() == "channels_first" else -1
-	channel = input_feature.get_shape().as_list()[channel_axis]
+    def call(self, inputs):
+        channel = inputs.get_shape().as_list()[-1]
 
-	se_feature = GlobalAveragePooling2D()(input_feature)
-	se_feature = Reshape((1, 1, channel))(se_feature)
-	assert se_feature.get_shape().as_list()[1:] == [1, 1, channel]
-	se_feature = Dense(channel // ratio,
-					   activation='relu',
-					   kernel_initializer='he_normal',
-					   use_bias=True,
-					   bias_initializer='zeros')(se_feature)
-	assert se_feature.get_shape().as_list()[1:] == [1, 1, channel//ratio]
-	se_feature = Dense(channel,
-					   activation='sigmoid',
-					   kernel_initializer='he_normal',
-					   use_bias=True,
-					   bias_initializer='zeros')(se_feature)
-	assert se_feature.get_shape().as_list()[1:] == [1, 1, channel]
-	if K.image_data_format() == 'channels_first':
-		se_feature = Permute((3, 1, 2))(se_feature)
+        avg_pool = tf.keras.layers.GlobalAveragePooling2D()(inputs)    
+        avg_pool = tf.keras.layers.Reshape((1, 1, channel))(avg_pool)
+        avg_pool = self.shared_layer_one(avg_pool)
+        avg_pool = self.shared_layer_two(avg_pool)
 
-	se_feature = multiply([input_feature, se_feature])
-	return se_feature
+        max_pool = tf.keras.layers.GlobalMaxPooling2D()(inputs)
+        max_pool = tf.keras.layers.Reshape((1, 1, channel))(max_pool)
+        max_pool = self.shared_layer_one(max_pool)
+        max_pool = self.shared_layer_two(max_pool)
 
+        feature = tf.keras.layers.Add()([avg_pool, max_pool])
+        feature = tf.keras.layers.Activation('sigmoid')(feature)
 
-def cbam_block(cbam_feature, ratio=8):
-	"""Contains the implementation of Convolutional Block Attention Module(CBAM) block.
-	As described in https://arxiv.org/abs/1807.06521.
-	"""
-	
-	cbam_feature = channel_attention(cbam_feature, ratio)
-	cbam_feature = spatial_attention(cbam_feature)
-	return cbam_feature
+        return tf.keras.layers.multiply([inputs, feature])
 
 
-def channel_attention(input_feature, ratio=8):
-	
-	channel_axis = 1 if K.image_data_format() == "channels_first" else -1
-	channel = input_feature.get_shape().as_list()[channel_axis]
-	
-	shared_layer_one = Dense(channel//ratio,
-							 activation='relu',
-							 kernel_initializer='he_normal',
-							 use_bias=True,
-							 bias_initializer='zeros')
-	shared_layer_two = Dense(channel,
-							 kernel_initializer='he_normal',
-							 use_bias=True,
-							 bias_initializer='zeros')
-	
-	avg_pool = GlobalAveragePooling2D()(input_feature)    
-	avg_pool = Reshape((1,1,channel))(avg_pool)
-	assert avg_pool.get_shape().as_list()[1:] == [1, 1, channel]
-	avg_pool = shared_layer_one(avg_pool)
-	assert avg_pool.get_shape().as_list()[1:] == [1, 1, channel//ratio]
-	avg_pool = shared_layer_two(avg_pool)
-	assert avg_pool.get_shape().as_list()[1:] == [1, 1, channel]
-	
-	max_pool = GlobalMaxPooling2D()(input_feature)
-	max_pool = Reshape((1,1,channel))(max_pool)
-	assert max_pool.get_shape().as_list()[1:] == [1, 1, channel]
-	max_pool = shared_layer_one(max_pool)
-	assert max_pool.get_shape().as_list()[1:] == [1, 1, channel//ratio]
-	max_pool = shared_layer_two(max_pool)
-	assert max_pool.get_shape().as_list()[1:] == [1, 1, channel]
-	
-	cbam_feature = Add()([avg_pool,max_pool])
-	cbam_feature = Activation('sigmoid')(cbam_feature)
-	
-	if K.image_data_format() == "channels_first":
-		cbam_feature = Permute((3, 1, 2))(cbam_feature)
-	
-	return multiply([input_feature, cbam_feature])
+class spatial_attention(tf.keras.layers.Layer):
+    """ spatial attention module """
+    def __init__(self, kernel_size=7, **kwargs):
+        self.kernel_size = kernel_size
+        super(spatial_attention, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=self.kernel_size,
+                                             strides=1, padding='same', activation='sigmoid',
+                                             kernel_initializer='he_normal', use_bias=False)
+        super(spatial_attention, self).build(input_shape)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+    def call(self, inputs):
+        avg_pool = tf.keras.layers.Lambda(lambda x: tf.keras.backend.mean(x, axis=-1, keepdims=True))(inputs)
+        max_pool = tf.keras.layers.Lambda(lambda x: tf.keras.backend.max(x, axis=-1, keepdims=True))(inputs)
+        concat = tf.keras.layers.Concatenate(axis=-1)([avg_pool, max_pool])
+        feature = self.conv(concat)	
+            
+        return tf.keras.layers.multiply([inputs, feature])
 
 
-def spatial_attention(input_feature):
-	kernel_size = 7
-	
-	if K.image_data_format() == "channels_first":
-		channel = input_feature.get_shape().as_list()[1]
-		cbam_feature = Permute((2, 3, 1))(input_feature)
-	else:
-		channel = input_feature.get_shape().as_list()[-1]
-		cbam_feature = input_feature
-	
-	avg_pool = Lambda(lambda x: K.mean(x, axis=3, keepdims=True))(cbam_feature)
-	assert avg_pool.get_shape().as_list()[-1] == 1
-	max_pool = Lambda(lambda x: K.max(x, axis=3, keepdims=True))(cbam_feature)
-	assert max_pool.get_shape().as_list()[-1] == 1
-	concat = Concatenate(axis=3)([avg_pool, max_pool])
-	assert concat.get_shape().as_list()[-1] == 2
-	cbam_feature = Conv2D(filters = 1,
-					kernel_size=kernel_size,
-					strides=1,
-					padding='same',
-					activation='sigmoid',
-					kernel_initializer='he_normal',
-					use_bias=False)(concat)	
-	assert cbam_feature.get_shape().as_list()[-1] == 1
-	
-	if K.image_data_format() == "channels_first":
-		cbam_feature = Permute((3, 1, 2))(cbam_feature)
-		
-	return multiply([input_feature, cbam_feature])
+def cbam_block(inputs, ratio=8, kernel_size=7):
+    """
+    Contains the implementation of Convolutional Block Attention Module(CBAM) block.
+    As described in https://arxiv.org/abs/1807.06521.
+    """
+
+    feature = channel_attention(ratio=ratio)(inputs)
+    feature = spatial_attention(kernel_size=kernel_size)(feature)
+
+    return feature
+    
