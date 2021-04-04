@@ -28,6 +28,27 @@ def _get_model(model_key: str, **kwargs):
     return all_[model_key](**kwargs)
 
 
+def rnn_supervised(n_classes: int, input_size: int) -> tf.keras.Sequential:
+    """
+    Model for the unmixing which utilizes a recurrent neural network (RNN)
+    for extracting valuable information from the spectral domain
+    in an supervised manner.
+
+    :param n_classes: Number of classes.
+    :param input_size: Number of input spectral bands.
+    :return: RNN model instance.
+    """
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.GRU(units=8, input_shape=(input_size, 1),
+                                  return_sequences=True))
+    model.add(tf.keras.layers.GRU(units=32, return_sequences=True))
+    model.add(tf.keras.layers.GRU(units=128, return_sequences=True))
+    model.add(tf.keras.layers.GRU(units=512, return_sequences=False))
+
+    model.add(tf.keras.layers.Dense(n_classes, activation='softmax'))
+    return model
+
+
 def pixel_based_cnn(n_classes: int, input_size: int) -> tf.keras.Sequential:
     """
     Model for pixel-based supervised hyperspectral unmixing proposed in
@@ -63,22 +84,22 @@ def pixel_based_cnn(n_classes: int, input_size: int) -> tf.keras.Sequential:
     return model
 
 
-def pixel_based_fnn(n_classes: int, input_size: int) -> tf.keras.models.Model:
+def pixel_based_fnnc(n_classes: int, input_size: int) -> tf.keras.models.Model:
     """
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
-    :return: FNN model instance.
+    :return: FNNC model instance.
     """
     input = tf.keras.layers.Input(shape=(input_size, 1))
 
-    lstm1 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.2))(input)
+    lstm1 = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=10, return_sequences=True, 
+                                                               dropout=0.2))(input)
     lstm1 = tf.keras.layers.BatchNormalization()(lstm1)
-    lstm2 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.3))(lstm1)
+    lstm2 = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=10, 
+                                                               return_sequences=True, dropout=0.3))(lstm1)
     lstm2 = tf.keras.layers.BatchNormalization()(lstm2)
-    lstm3 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.4))(lstm2)
+    lstm3 = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=10, 
+                                                               return_sequences=True, dropout=0.4))(lstm2)
     lstm3 = tf.keras.layers.BatchNormalization()(lstm3)
     X2 = tf.keras.layers.Flatten()(lstm3)
 
@@ -99,61 +120,24 @@ def pixel_based_fnn(n_classes: int, input_size: int) -> tf.keras.models.Model:
 
     Den1 = tf.keras.layers.Dense(units=600, activation='relu', use_bias=None)(Con)
     Global = tf.keras.layers.Dense(units=150, activation='relu', use_bias=None)(Den1)
-    Abadunce = tf.keras.layers.Dense(units=n_classes, activation='softmax')(Global) 
-
+    
+    Abadunce = tf.keras.layers.Reshape((1, 150))(Global)
+    Abadunce = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=100, dropout=0.2))(Abadunce)
+    Abadunce = tf.keras.layers.BatchNormalization()(Abadunce)
+    Abadunce = tf.keras.layers.RepeatVector(n_classes)(Abadunce)
+    Abadunce = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=50, return_sequences=True, 
+                                                                  kernel_regularizer=tf.keras.regularizers.l2(1e-4), 
+                                                                  dropout=0.2))(Abadunce)
+    Abadunce = tf.keras.layers.BatchNormalization()(Abadunce)
+    Abadunce = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=20, return_sequences=True, 
+                                                                  kernel_regularizer=tf.keras.regularizers.l2(1e-4)))(Abadunce)
+    Abadunce = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=1, activation='sigmoid'))(Abadunce)
+    Abadunce = tf.keras.backend.squeeze(Abadunce, axis=-1)
+    
     model = tf.keras.models.Model(inputs=input, outputs=Abadunce)
     return model
 
 
-def pixel_based_bilstm(n_classes: int, input_size: int) -> tf.keras.models.Model:
-    """
-    :param n_classes: Number of classes.
-    :param input_size: Number of input spectral bands.
-    :return: BiLSTM model instance.
-    """
-    input = tf.keras.layers.Input(shape=(input_size, 1))
-
-    lstm1 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.2))(input)
-    lstm1 = tf.keras.layers.BatchNormalization()(lstm1)
-    lstm2 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.3))(lstm1)
-    lstm2 = tf.keras.layers.BatchNormalization()(lstm2)
-    lstm3 = tf.keras.layers.Bidirectional(
-                tf.keras.layers.LSTM(units=10, return_sequences=True, dropout=0.4))(lstm2)
-    lstm3 = tf.keras.layers.BatchNormalization()(lstm3)
-    X2 = tf.keras.layers.Flatten()(lstm3)
-
-    Den1 = tf.keras.layers.Dense(units=600, activation='relu', use_bias=None)(X2)
-    Global = tf.keras.layers.Dense(units=150, activation='relu', use_bias=None)(Den1)
-    Abadunce = tf.keras.layers.Dense(units=n_classes, activation='softmax')(Global)
-
-    model = tf.keras.models.Model(inputs=input, outputs=Abadunce)
-    return model
-
-
-def rnn_supervised(n_classes: int, input_size: int) -> tf.keras.Sequential:
-    """
-    Model for the unmixing which utilizes a recurrent neural network (RNN)
-    for extracting valuable information from the spectral domain
-    in an supervised manner.
-
-    :param n_classes: Number of classes.
-    :param input_size: Number of input spectral bands.
-    :return: RNN model instance.
-    """
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.GRU(units=8, input_shape=(input_size, 1),
-                                  return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=32, return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=128, return_sequences=True))
-    model.add(tf.keras.layers.GRU(units=512, return_sequences=False))
-
-    model.add(tf.keras.layers.Dense(n_classes, activation='softmax'))
-    return model
-
-
-# ############################ DACN ############################
 def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     """
     Model for the hyperspectral unmixing which utilizes 
@@ -170,9 +154,9 @@ def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal',
                                      data_format='channels_last')(input)
-    LayerN_1 = tf.keras.layers.LayerNormalization()(Conv1_1)
+    LayerN_1 = tf.keras.layers.LayerNormalization(axis=-2)(Conv1_1)
     LeakyReLu1_1 = tf.keras.layers.LeakyReLU()(LayerN_1)
-    Conv1_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 4),
+    Conv1_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 3),
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(LeakyReLu1_1)
     LeakyReLu1_2 = tf.keras.layers.LeakyReLU()(Conv1_2)
@@ -184,9 +168,9 @@ def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     Conv2_1 = tf.keras.layers.Conv2D(filters=32, kernel_size=(1, 5),
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(CBAM_1)
-    LayerN_2 = tf.keras.layers.LayerNormalization()(Conv2_1)
+    LayerN_2 = tf.keras.layers.LayerNormalization(axis=-2)(Conv2_1)
     LeakyReLu2_1 = tf.keras.layers.LeakyReLU()(LayerN_2)
-    Conv2_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 4),
+    Conv2_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 3),
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(LeakyReLu2_1)
     LeakyReLu2_2 = tf.keras.layers.LeakyReLU()(Conv2_2)

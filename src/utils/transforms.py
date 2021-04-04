@@ -14,7 +14,7 @@ from typing import List, Dict
 
 from src.model import enums
 from src.model.models import rnn_supervised, pixel_based_bilstm, \
-    pixel_based_cnn, pixel_based_fnn, pixel_based_dacn
+    pixel_based_cnn, pixel_based_fnnc, pixel_based_dacn
 
 
 class BaseTransform(abc.ABC):
@@ -94,7 +94,7 @@ UNMIXING_TRANSFORMS = {
 
     pixel_based_cnn.__name__: [SpectralTransform],
 
-    pixel_based_fnn.__name__: [SpectralTransform],
+    pixel_based_fnnc.__name__: [SpectralTransform],
     
     pixel_based_dacn.__name__: [SpectralTransform]
 }

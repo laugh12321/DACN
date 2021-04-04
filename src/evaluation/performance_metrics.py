@@ -13,7 +13,7 @@ import tensorflow as tf
 from typing import Dict, List
 
 from src.model.models import rnn_supervised, pixel_based_bilstm, \
-    pixel_based_cnn, pixel_based_fnn, pixel_based_dacn
+    pixel_based_cnn, pixel_based_fnnc, pixel_based_dacn
 
 
 def convert_to_tensor(metric_function):
@@ -140,7 +140,7 @@ UNMIXING_TRAIN_METRICS = {
                                overall_rms_abundance_angle_distance,
                                sum_per_class_rmse],
 
-    pixel_based_fnn.__name__: [overall_rmse,
+    pixel_based_fnnc.__name__: [overall_rmse,
                                overall_rms_abundance_angle_distance,
                                sum_per_class_rmse],
 
@@ -164,7 +164,7 @@ UNMIXING_LOSSES = {
 
     pixel_based_cnn.__name__: 'mse',
 
-    pixel_based_fnn.__name__: 'mse',
+    pixel_based_fnnc.__name__: 'mse',
     
     pixel_based_dacn.__name__: 'mse'
 }
