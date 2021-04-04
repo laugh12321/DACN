@@ -11,7 +11,7 @@ Created on Jan 29, 2021
 import sys
 import numpy as np
 import tensorflow as tf
-from src.model.attention import attach_attention_module
+from src.model.attention import cbam_block
 
 
 def _get_model(model_key: str, **kwargs):
@@ -162,7 +162,7 @@ def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     LeakyReLu1_2 = tf.keras.layers.LeakyReLU()(Conv1_2)
     Pooling_1 = tf.keras.layers.MaxPool2D(pool_size=(1, 2))(LeakyReLu1_2)
     # Convolutional Block Attention Module
-    CBAM_1 = attach_attention_module(Pooling_1, 'cbam_block')
+    CBAM_1 = cbam_block(Pooling_1)
 
     #
     Conv2_1 = tf.keras.layers.Conv2D(filters=32, kernel_size=(1, 5),
@@ -176,7 +176,7 @@ def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     LeakyReLu2_2 = tf.keras.layers.LeakyReLU()(Conv2_2)
     Pooling_2 = tf.keras.layers.MaxPool2D(pool_size=(1, 2))(LeakyReLu2_2)
     # Convolutional Block Attention Module
-    CBAM_2 = attach_attention_module(Pooling_2, 'cbam_block')
+    CBAM_2 = cbam_block(Pooling_2)
 
     flatten = tf.keras.layers.Flatten()(CBAM_2)
     dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
