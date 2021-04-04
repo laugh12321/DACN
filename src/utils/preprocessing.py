@@ -45,49 +45,6 @@ def reshape_cube_to_1d_samples(data: np.ndarray,
     return data, labels
 
 
-def reshape_cube_to_2d_samples(data: np.ndarray,
-                               labels: np.ndarray,
-                               channels_idx: int = 0) -> \
-        Tuple[np.ndarray, np.ndarray]:
-    """
-    Reshape the data and labels from [CHANNELS, HEIGHT, WIDTH] to
-        [PIXEL,CHANNELS, 1], so it fits the 2D Convolutional modules.
-
-    :param data: Data to reshape.
-    :param labels: Corresponding labels.
-    :param channels_idx: Index at which the channels are located in the
-                         provided data file.
-    :return: Reshape data and labels
-    :rtype: tuple with reshaped data and labels
-    """
-    data = np.rollaxis(data, channels_idx, len(data.shape))
-    height, width, channels = data.shape
-    data = data.reshape(height * width, channels)
-    data = np.expand_dims(data, 1)
-    labels = labels.reshape(height * width, -1)
-    data = data.astype(np.float32)
-    labels = labels.astype(np.float32)
-
-    return data, labels
-
-
-def get_padded_cube(data: np.ndarray, padding_size: int) -> np.ndarray:
-    """
-    Pad the cube with zeros
-
-    :param data: Data to pad
-    :param padding_size: Size of the padding for each side
-    :return: Padded cube
-    """
-    v_padding = np.zeros((padding_size, data.shape[WIDTH], data.shape[DEPTH]))
-    data = np.vstack((v_padding, data))
-    data = np.vstack((data, v_padding))
-    h_padding = np.zeros((data.shape[HEIGHT], padding_size, data.shape[DEPTH]))
-    data = np.hstack((h_padding, data))
-    data = np.hstack((data, h_padding))
-    return data
-
-
 def remove_nan_samples(data: np.ndarray, labels: np.ndarray) -> Tuple[
     np.ndarray, np.ndarray]:
     """

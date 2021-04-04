@@ -12,8 +12,8 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict, List
 
-from src.model.models import rnn_supervised, pixel_based_bilstm, \
-    pixel_based_cnn, pixel_based_fnnc, pixel_based_dacn
+from src.model.models import rnn_supervised, pixel_based_cnn, \
+    pixel_based_fnnc, pixel_based_dacn
 
 
 def convert_to_tensor(metric_function):
@@ -132,10 +132,6 @@ UNMIXING_TRAIN_METRICS = {
                               overall_rms_abundance_angle_distance,
                               sum_per_class_rmse],
 
-    pixel_based_bilstm.__name__: [overall_rmse,
-                                  overall_rms_abundance_angle_distance,
-                                  sum_per_class_rmse],
-
     pixel_based_cnn.__name__: [overall_rmse,
                                overall_rms_abundance_angle_distance,
                                sum_per_class_rmse],
@@ -159,8 +155,6 @@ UNMIXING_TEST_METRICS = {
 
 UNMIXING_LOSSES = {
     rnn_supervised.__name__: 'mse',
-
-    pixel_based_bilstm.__name__: 'mse',
 
     pixel_based_cnn.__name__: 'mse',
 

@@ -147,34 +147,34 @@ def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     :param input_size: Number of input spectral bands.
     :return: Model proposed in the publication listed above.
     """
-    input = tf.keras.layers.Input(shape=(1, input_size, 1))
+    input = tf.keras.layers.Input(shape=(input_size, 1))
 
 
-    Conv1_1 = tf.keras.layers.Conv2D(filters=8, kernel_size=(1, 5),
+    Conv1_1 = tf.keras.layers.Conv1D(filters=8, kernel_size=5,
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal',
                                      data_format='channels_last')(input)
-    LayerN_1 = tf.keras.layers.LayerNormalization(axis=-2)(Conv1_1)
+    LayerN_1 = tf.keras.layers.LayerNormalization(axis=1)(Conv1_1)
     LeakyReLu1_1 = tf.keras.layers.LeakyReLU()(LayerN_1)
-    Conv1_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 3),
+    Conv1_2 = tf.keras.layers.Conv1D(filters=16, kernel_size=3,
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(LeakyReLu1_1)
     LeakyReLu1_2 = tf.keras.layers.LeakyReLU()(Conv1_2)
-    Pooling_1 = tf.keras.layers.MaxPool2D(pool_size=(1, 2))(LeakyReLu1_2)
+    Pooling_1 = tf.keras.layers.MaxPool1D(pool_size=2)(LeakyReLu1_2)
     # Convolutional Block Attention Module
     CBAM_1 = cbam_block(Pooling_1)
 
     #
-    Conv2_1 = tf.keras.layers.Conv2D(filters=32, kernel_size=(1, 5),
+    Conv2_1 = tf.keras.layers.Conv1D(filters=32, kernel_size=5,
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(CBAM_1)
-    LayerN_2 = tf.keras.layers.LayerNormalization(axis=-2)(Conv2_1)
+    LayerN_2 = tf.keras.layers.LayerNormalization(axis=1)(Conv2_1)
     LeakyReLu2_1 = tf.keras.layers.LeakyReLU()(LayerN_2)
-    Conv2_2 = tf.keras.layers.Conv2D(filters=16, kernel_size=(1, 3),
+    Conv2_2 = tf.keras.layers.Conv1D(filters=64, kernel_size=3,
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal')(LeakyReLu2_1)
     LeakyReLu2_2 = tf.keras.layers.LeakyReLU()(Conv2_2)
-    Pooling_2 = tf.keras.layers.MaxPool2D(pool_size=(1, 2))(LeakyReLu2_2)
+    Pooling_2 = tf.keras.layers.MaxPool1D(pool_size=2)(LeakyReLu2_2)
     # Convolutional Block Attention Module
     CBAM_2 = cbam_block(Pooling_2)
 

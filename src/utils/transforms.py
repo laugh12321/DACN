@@ -13,8 +13,8 @@ import numpy as np
 from typing import List, Dict
 
 from src.model import enums
-from src.model.models import rnn_supervised, pixel_based_bilstm, \
-    pixel_based_cnn, pixel_based_fnnc, pixel_based_dacn
+from src.model.models import rnn_supervised, pixel_based_cnn, \
+    pixel_based_fnnc, pixel_based_dacn
 
 
 class BaseTransform(abc.ABC):
@@ -89,8 +89,6 @@ def apply_transformations(data: Dict,
 
 UNMIXING_TRANSFORMS = {
     rnn_supervised.__name__: [SpectralTransform],
-
-    pixel_based_bilstm.__name__: [SpectralTransform],
 
     pixel_based_cnn.__name__: [SpectralTransform],
 

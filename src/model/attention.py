@@ -36,13 +36,13 @@ class channel_attention(tf.keras.layers.Layer):
     def call(self, inputs):
         channel = inputs.get_shape().as_list()[-1]
 
-        avg_pool = tf.keras.layers.GlobalAveragePooling2D()(inputs)    
-        avg_pool = tf.keras.layers.Reshape((1, 1, channel))(avg_pool)
+        avg_pool = tf.keras.layers.GlobalAveragePooling1D()(inputs)    
+        avg_pool = tf.keras.layers.Reshape((1, channel))(avg_pool)
         avg_pool = self.shared_layer_one(avg_pool)
         avg_pool = self.shared_layer_two(avg_pool)
 
-        max_pool = tf.keras.layers.GlobalMaxPooling2D()(inputs)
-        max_pool = tf.keras.layers.Reshape((1, 1, channel))(max_pool)
+        max_pool = tf.keras.layers.GlobalMaxPooling1D()(inputs)
+        max_pool = tf.keras.layers.Reshape((1, channel))(max_pool)
         max_pool = self.shared_layer_one(max_pool)
         max_pool = self.shared_layer_two(max_pool)
 
@@ -59,9 +59,9 @@ class spatial_attention(tf.keras.layers.Layer):
         super(spatial_attention, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=self.kernel_size,
-                                             strides=1, padding='same', activation='sigmoid',
-                                             kernel_initializer='he_normal', use_bias=False)
+        self.conv = tf.keras.layers.Conv1D(filters=1, kernel_size=self.kernel_size,
+                                           strides=1, padding='same', activation='sigmoid',
+                                           kernel_initializer='he_normal', use_bias=False)
         super(spatial_attention, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):

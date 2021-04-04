@@ -16,30 +16,16 @@ from src.model import enums
 from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
-from src.model.models import rnn_supervised, pixel_based_bilstm, \
-    pixel_based_cnn, pixel_based_fnn, pixel_based_dacn
+from src.model.models import rnn_supervised, pixel_based_cnn, \
+    pixel_based_fnnc, pixel_based_dacn
 
 # Literature hyperparameters settings:
-RESHAPES = {
-    rnn_supervised.__name__: False,
-
-    pixel_based_bilstm.__name__: False,
-
-    pixel_based_cnn.__name__: False,
-
-    pixel_based_fnn.__name__: False,
-
-    pixel_based_dacn.__name__: True
-}
-
 LEARNING_RATES = {
     rnn_supervised.__name__: 0.001,
 
-    pixel_based_bilstm.__name__: 0.0001,
-
     pixel_based_cnn.__name__: 0.01,
 
-    pixel_based_fnn.__name__: 0.0001,
+    pixel_based_fnnc.__name__: 0.0001,
 
     pixel_based_dacn.__name__: 3e-3
 }
@@ -56,7 +42,6 @@ def run_experiments(*,
                     dest_path: str = None,
                     sample_size: int,
                     n_classes: int,
-                    reshape: bool = None,
                     lr: float = None,
                     batch_size: int = 256,
                     epochs: int = 100,
@@ -102,15 +87,12 @@ def run_experiments(*,
         os.makedirs(experiment_dest_path, exist_ok=True)
 
         # Apply default literature hyper parameters:
-        if reshape is None and model_name in RESHAPES:
-            reshape = RESHAPES[model_name]
         if lr is None and model_name in LEARNING_RATES:
             lr = LEARNING_RATES[model_name]
 
         # Prepare data for unmixing:
         data = prepare_data.main(data_file_path=data_file_path,
                                  ground_truth_path=ground_truth_path,
-                                 reshape=reshape,
                                  train_size=parse_train_size(train_size),
                                  val_size=val_size,
                                  seed=experiment_id)

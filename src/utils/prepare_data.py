@@ -20,7 +20,6 @@ EXTENSION = 1
 def main(*,
          data_file_path: str,
          ground_truth_path: str,
-         reshape: bool,
          train_size: int or float,
          val_size: float = 0.1,
          channels_idx: int = -1,
@@ -51,11 +50,7 @@ def main(*,
     train_size = utils.parse_train_size(train_size)
     data, labels = io.load_npy(data_file_path, ground_truth_path)
 
-    if reshape:
-        data, labels = preprocessing.reshape_cube_to_2d_samples(data, labels, channels_idx)
-    else:
-        data, labels = preprocessing.reshape_cube_to_1d_samples(data, labels, channels_idx)
-
+    data, labels = preprocessing.reshape_cube_to_1d_samples(data, labels, channels_idx)
     data, labels = preprocessing.remove_nan_samples(data, labels)
 
     train_x, train_y, val_x, val_y, test_x, test_y = \
