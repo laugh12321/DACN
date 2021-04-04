@@ -13,8 +13,8 @@ import numpy as np
 from typing import List, Dict
 
 from src.model import enums
-from src.model.models import pixel_based_cnn, cube_based_cnn, rnn_supervised, \
-    pixel_based_dacn, cube_based_dacn
+from src.model.models import rnn_supervised, pixel_based_bilstm, \
+    pixel_based_cnn, pixel_based_fnn, pixel_based_dacn
 
 
 class BaseTransform(abc.ABC):
@@ -87,57 +87,14 @@ def apply_transformations(data: Dict,
     return data
 
 
-class RNNSpectralInputTransform(BaseTransform):
-
-    def __call__(self, samples: np.ndarray,
-                 labels: np.ndarray) -> List[np.ndarray]:
-        """"
-        Transform the input samples to fit the recurrent
-        neural network (RNN) input.
-        This is performed for the pixel-based model;
-        the input sample includes only spectral bands.
-        :param samples: Input samples that will undergo the transformation.
-        :param labels: Class values for each sample.
-        :return: List containing the normalized samples and the class labels.
-        """
-        return [np.expand_dims(np.squeeze(samples), -1), labels]
-
-
-class ExtractCentralPixelSpectrumTransform(BaseTransform):
-    def __init__(self, neighborhood_size: int):
-        """
-        Extract central pixel from each spatial sample.
-
-        :param neighborhood_size: The spatial size of the patch.
-        """
-        super().__init__()
-        self.neighborhood_size = neighborhood_size
-
-    def __call__(self, samples: np.ndarray,
-                 labels: np.ndarray) -> List[np.ndarray]:
-        """"
-        Transform the labels for unsupervised unmixing problem.
-        The label is the central pixel of each sample patch.
-
-        :param samples: Input samples.
-        :param labels: Central pixel of each sample.
-        :return: List containing the input samples
-            and its targets as central pixel.
-        """
-        if self.neighborhood_size is not None:
-            central_index = np.floor(self.neighborhood_size / 2).astype(int)
-            labels = np.squeeze(samples[:, central_index, central_index])
-        else:
-            labels = np.squeeze(samples)
-        return [samples, labels]
-
-
 UNMIXING_TRANSFORMS = {
+    rnn_supervised.__name__: [SpectralTransform],
+
+    pixel_based_bilstm.__name__: [SpectralTransform],
+
     pixel_based_cnn.__name__: [SpectralTransform],
-    cube_based_cnn.__name__: [SpectralTransform],
 
-    pixel_based_dacn.__name__: [SpectralTransform],
-    cube_based_dacn.__name__: [SpectralTransform],
-
-    rnn_supervised.__name__: [RNNSpectralInputTransform]
+    pixel_based_fnn.__name__: [SpectralTransform],
+    
+    pixel_based_dacn.__name__: [SpectralTransform]
 }

@@ -27,7 +27,6 @@ def train(data: Dict[str, np.ndarray],
           dest_path: str,
           sample_size: int,
           n_classes: int,
-          neighborhood_size: int,
           lr: float,
           batch_size: int,
           epochs: int,
@@ -48,7 +47,6 @@ def train(data: Dict[str, np.ndarray],
         subdirectories in this given directory.
     :param sample_size: Size of the input sample.
     :param n_classes: Number of classes.
-    :param neighborhood_size: Size of the spatial patch.
     :param lr: Learning rate for the model, i.e., regulates
         the size of the step in the gradient descent process.
     :param batch_size: Size of the batch used in training phase,
@@ -66,8 +64,7 @@ def train(data: Dict[str, np.ndarray],
     model = _get_model(
         model_key=model_name,
         **{'input_size': sample_size,
-           'n_classes': n_classes,
-           'neighborhood_size': neighborhood_size})
+           'n_classes': n_classes})
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(lr=lr),
@@ -95,8 +92,7 @@ def train(data: Dict[str, np.ndarray],
     min_, max_ = data[enums.DataStats.MIN], data[enums.DataStats.MAX]
 
     transformations = [transforms.MinMaxNormalize(min_=min_, max_=max_)]
-    transformations += [t(**{'neighborhood_size': neighborhood_size}) for t
-                        in UNMIXING_TRANSFORMS[model_name]]
+    transformations += [UNMIXING_TRANSFORMS[model_name]]
 
     train_dict = transforms.apply_transformations(train_dict, transformations)
     val_dict = transforms.apply_transformations(val_dict, transformations)

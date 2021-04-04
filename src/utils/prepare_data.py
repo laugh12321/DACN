@@ -20,9 +20,9 @@ EXTENSION = 1
 def main(*,
          data_file_path: str,
          ground_truth_path: str,
+         reshape: bool,
          train_size: int or float,
          val_size: float = 0.1,
-         neighborhood_size: int = None,
          channels_idx: int = -1,
          seed: int = 0):
     """
@@ -43,9 +43,6 @@ def main(*,
         percentage of each class from the training set
         to be extracted as a validation set.
         Defaults to 0.1.
-    :param neighborhood_size: Neighborhood size of the pixel to extract along
-        with its spectral bands. Use only if you are training 2D or 3D
-        convolutional model.
     :param channels_idx: Index specifying the channels position in the provided
         data.
     :param seed: Seed used for data shuffling.
@@ -54,11 +51,10 @@ def main(*,
     train_size = utils.parse_train_size(train_size)
     data, labels = io.load_npy(data_file_path, ground_truth_path)
 
-    if neighborhood_size is None:
+    if reshape:
         data, labels = preprocessing.reshape_cube_to_2d_samples(data, labels, channels_idx)
     else:
-        data, labels = preprocessing.reshape_cube_to_3d_samples(
-            data, labels, neighborhood_size, channels_idx)
+        data, labels = preprocessing.reshape_cube_to_1d_samples(data, labels, channels_idx)
 
     data, labels = preprocessing.remove_nan_samples(data, labels)
 

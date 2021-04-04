@@ -12,8 +12,8 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict, List
 
-from src.model.models import  pixel_based_cnn, cube_based_cnn, rnn_supervised, \
-    pixel_based_dacn, cube_based_dacn
+from src.model.models import rnn_supervised, pixel_based_bilstm, \
+    pixel_based_cnn, pixel_based_fnn, pixel_based_dacn
 
 
 def convert_to_tensor(metric_function):
@@ -128,23 +128,25 @@ def overall_rmse(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
 
 
 UNMIXING_TRAIN_METRICS = {
-    pixel_based_cnn.__name__: [overall_rmse,
-                               overall_rms_abundance_angle_distance,
-                               sum_per_class_rmse],
-    cube_based_cnn.__name__: [overall_rmse,
+    rnn_supervised.__name__: [overall_rmse,
                               overall_rms_abundance_angle_distance,
                               sum_per_class_rmse],
 
-    pixel_based_dacn.__name__: [overall_rmse,
-                                         overall_rms_abundance_angle_distance,
-                                         sum_per_class_rmse],
-    cube_based_dacn.__name__: [overall_rmse,
-                                        overall_rms_abundance_angle_distance,
-                                        sum_per_class_rmse],
+    pixel_based_bilstm.__name__: [overall_rmse,
+                                  overall_rms_abundance_angle_distance,
+                                  sum_per_class_rmse],
 
-    rnn_supervised.__name__: [overall_rmse,
-                              overall_rms_abundance_angle_distance,
-                              sum_per_class_rmse]
+    pixel_based_cnn.__name__: [overall_rmse,
+                               overall_rms_abundance_angle_distance,
+                               sum_per_class_rmse],
+
+    pixel_based_fnn.__name__: [overall_rmse,
+                               overall_rms_abundance_angle_distance,
+                               sum_per_class_rmse],
+
+    pixel_based_dacn.__name__: [overall_rmse,
+                                overall_rms_abundance_angle_distance,
+                                sum_per_class_rmse],
 }
 
 UNMIXING_TEST_METRICS = {
@@ -156,13 +158,15 @@ UNMIXING_TEST_METRICS = {
 }
 
 UNMIXING_LOSSES = {
+    rnn_supervised.__name__: 'mse',
+
+    pixel_based_bilstm.__name__: 'mse',
+
     pixel_based_cnn.__name__: 'mse',
-    cube_based_cnn.__name__: 'mse',
 
-    pixel_based_dacn.__name__: 'mse',
-    cube_based_dacn.__name__: 'mse',
-
-    rnn_supervised.__name__: 'mse'
+    pixel_based_fnn.__name__: 'mse',
+    
+    pixel_based_dacn.__name__: 'mse'
 }
 
 

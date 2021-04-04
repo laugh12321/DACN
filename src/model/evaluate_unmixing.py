@@ -25,7 +25,6 @@ from src.evaluation.performance_metrics import UNMIXING_TRAIN_METRICS,\
 def evaluate(data,
              model_name: str,
              dest_path: str,
-             neighborhood_size: int,
              batch_size: int):
     """
     Function for evaluating the trained model for the unmixing problem.
@@ -34,7 +33,6 @@ def evaluate(data,
     :param data: The data dictionary containing the subset for testing.
     :param dest_path: Directory in which to store the calculated metrics,
             and Path to the model.
-    :param neighborhood_size: Size of the spatial patch.
     :param batch_size: Size of the batch for inference.
     """
     model = tf.keras.models.load_model(
@@ -47,8 +45,7 @@ def evaluate(data,
     min_, max_ = io.read_min_max(os.path.join(dest_path, 'min-max.csv'))
 
     transformations = [transforms.MinMaxNormalize(min_=min_, max_=max_)]
-    transformations += [t(**{'neighborhood_size': neighborhood_size}) for t
-                        in UNMIXING_TRANSFORMS[model_name]]
+    transformations += [UNMIXING_TRANSFORMS[model_name]]
     test_dict_transformed = transforms.apply_transformations(test_dict.copy(),
                                                              transformations)
 
@@ -61,8 +58,7 @@ def evaluate(data,
         'y_pred': y_pred,
         'y_true': test_dict[enums.Dataset.LABELS],
         'x_true': get_central_pixel_spectrum(
-            test_dict_transformed[enums.Dataset.DATA],
-            neighborhood_size)
+            test_dict_transformed[enums.Dataset.DATA])
     })
 
     model_metrics['inference_time'] = [inference_time]
