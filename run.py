@@ -27,7 +27,7 @@ LEARNING_RATES = {
 
     pixel_based_fnnc.__name__: 0.0001,
 
-    pixel_based_dacn.__name__: 3e-3
+    pixel_based_dacn.__name__: 9e-04
 }
 
 
