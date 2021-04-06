@@ -25,7 +25,8 @@ from src.evaluation.performance_metrics import UNMIXING_TRAIN_METRICS,\
 def evaluate(data,
              model_name: str,
              dest_path: str,
-             batch_size: int):
+             batch_size: int,
+             endmembers_path: str):
     """
     Function for evaluating the trained model for the unmixing problem.
 
@@ -34,6 +35,9 @@ def evaluate(data,
     :param dest_path: Directory in which to store the calculated metrics,
             and Path to the model.
     :param batch_size: Size of the batch for inference.
+    :param endmembers_path: Path to the endmembers matrix file,
+        containing the average reflectances for each endmember,
+        i.e., the pure spectra.
     """
     model = tf.keras.models.load_model(
         dest_path, compile=True,
@@ -55,6 +59,8 @@ def evaluate(data,
         batch_size=batch_size)
 
     model_metrics = calculate_unmixing_metrics(**{
+        'endmembers': np.load(endmembers_path)
+        if endmembers_path is not None else None,
         'y_pred': y_pred,
         'y_true': test_dict[enums.Dataset.LABELS],
         'x_true': get_central_pixel_spectrum(

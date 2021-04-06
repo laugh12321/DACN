@@ -13,7 +13,8 @@ import tensorflow as tf
 from typing import Dict, List
 
 from src.model.models import rnn_supervised, pixel_based_cnn, \
-    pixel_based_fnnc, pixel_based_dacn
+    pixel_based_dcae, pixel_based_fnnc, \
+    pixel_based_dacn, pixel_based_dacae
 
 
 def convert_to_tensor(metric_function):
@@ -25,6 +26,37 @@ def convert_to_tensor(metric_function):
         return metric_function(y_true=y_true, y_pred=y_pred)
 
     return wrapper
+
+
+def spectral_information_divergence_loss(y_true: tf.Tensor,
+                                         y_pred: tf.Tensor) -> tf.Tensor:
+    """
+    Calculate the spectral information divergence loss,
+    which is based on the divergence in information theory.
+    
+    Khajehrayeni, Farshid, and Hassan Ghassemian.
+    "Hyperspectral unmixing using deep convolutional
+    autoencoders in a supervised scenario."
+    IEEE Journal of Selected Topics in Applied Earth Observations and
+    Remote Sensing 13 (2020): 567-576.
+    
+    :param y_true: Labels as two dimensional abundances or original
+        input array of shape: [n_samples, n_classes], [n_samples, n_bands].
+    :param y_pred: Predicted abundances or reconstructed input array of shape:
+    [n_samples, n_classes], [n_samples, n_bands].
+    :return: The spectral information divergence loss.
+    """
+    y_true_row_sum = tf.reduce_sum(y_true, 1)
+    y_pred_row_sum = tf.reduce_sum(y_pred, 1)
+    y_true = y_true / tf.reshape(y_true_row_sum, (-1, 1))
+    y_pred = y_pred / tf.reshape(y_pred_row_sum, (-1, 1))
+    y_true, y_pred = tf.keras.backend.clip(y_true,
+                                           tf.keras.backend.epsilon(), 1), \
+                     tf.keras.backend.clip(y_pred,
+                                           tf.keras.backend.epsilon(), 1)
+    loss = tf.reduce_sum(y_true * tf.math.log(y_true / y_pred)) + \
+           tf.reduce_sum(y_pred * tf.math.log(y_pred / y_true))
+    return loss
 
 
 def average_angle_spectral_mapper(y_true: tf.Tensor,
@@ -136,6 +168,8 @@ UNMIXING_TRAIN_METRICS = {
                                overall_rms_abundance_angle_distance,
                                sum_per_class_rmse],
 
+    pixel_based_dcae.__name__: [spectral_information_divergence_loss],
+
     pixel_based_fnnc.__name__: [overall_rmse,
                                overall_rms_abundance_angle_distance,
                                sum_per_class_rmse],
@@ -143,6 +177,8 @@ UNMIXING_TRAIN_METRICS = {
     pixel_based_dacn.__name__: [overall_rmse,
                                 overall_rms_abundance_angle_distance,
                                 sum_per_class_rmse],
+
+    pixel_based_dacae.__name__: [spectral_information_divergence_loss]
 }
 
 UNMIXING_TEST_METRICS = {
@@ -158,9 +194,13 @@ UNMIXING_LOSSES = {
 
     pixel_based_cnn.__name__: 'mse',
 
+    pixel_based_dcae.__name__: spectral_information_divergence_loss,
+
     pixel_based_fnnc.__name__: 'mse',
     
-    pixel_based_dacn.__name__: 'mse'
+    pixel_based_dacn.__name__: 'mse',
+
+    pixel_based_dacae.__name__: spectral_information_divergence_loss
 }
 
 
@@ -180,5 +220,15 @@ def calculate_unmixing_metrics(**kwargs) -> Dict[str, List[float]]:
     for class_idx, class_rmse in enumerate(convert_to_tensor(per_class_rmse)(
             y_true=kwargs['y_true'], y_pred=kwargs['y_pred'])):
         model_metrics[f'class{class_idx}RMSE'] = [float(class_rmse)]
+    if kwargs['endmembers'] is not None:
+        # Calculate the reconstruction RMSE and SID losses:
+        x_pred = np.matmul(kwargs['y_pred'], kwargs['endmembers'].T)
+        model_metrics['rRMSE'] = [float(convert_to_tensor(dcae_rmse)
+                                        (y_true=kwargs['x_true'],
+                                         y_pred=x_pred))]
+        model_metrics['rSID'] = [float(convert_to_tensor(
+            spectral_information_divergence_loss)
+                                       (y_true=kwargs['x_true'],
+                                        y_pred=x_pred))]
 
     return model_metrics
