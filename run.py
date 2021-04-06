@@ -17,8 +17,7 @@ from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
 from src.model.models import rnn_supervised, pixel_based_cnn, \
-    pixel_based_dcae, pixel_based_fnnc, \
-    pixel_based_dacn, pixel_based_dacae
+    pixel_based_fnnc, pixel_based_dacn
 
 # Literature hyperparameters settings:
 LEARNING_RATES = {
@@ -26,13 +25,9 @@ LEARNING_RATES = {
 
     pixel_based_cnn.__name__: 0.01,
 
-    pixel_based_dcae.__name__: 0.001,
-
     pixel_based_fnnc.__name__: 0.0001,
 
-    pixel_based_dacn.__name__: 9e-04,
-
-    pixel_based_dcae.__name__: 0.001,
+    pixel_based_dacn.__name__: 3e-3
 }
 
 
@@ -52,8 +47,7 @@ def run_experiments(*,
                     epochs: int = 100,
                     verbose: int = 1,
                     shuffle: bool = True,
-                    patience: int = 15,
-                    endmembers_path: str = None):
+                    patience: int = 15):
     """
     Function for running experiments on unmixing given a set of hyper parameters.
 
@@ -86,9 +80,6 @@ def run_experiments(*,
     :param shuffle: Boolean indicating whether to shuffle datasets.
     :param patience: Number of epochs without improvement in order to
         stop the training phase.
-    :param endmembers_path: Path to the endmembers matrix file,
-        containing the average reflectances for each endmember,
-        i.e., the pure spectra.
     """
     for experiment_id in range(n_runs):
         experiment_dest_path = os.path.join(dest_path,
@@ -121,15 +112,13 @@ def run_experiments(*,
                              verbose=verbose,
                              shuffle=shuffle,
                              patience=patience,
-                             endmembers_path=endmembers_path,
                              seed=experiment_id)
         # Evaluate the model:
         evaluate_unmixing.evaluate(
             model_name=model_name,
             data=data,
             dest_path=experiment_dest_path,
-            batch_size=batch_size,
-            endmembers_path=endmembers_path)
+            batch_size=batch_size)
         tf.keras.backend.clear_session()
 
     artifacts_reporter.collect_artifacts_report(
@@ -149,11 +138,6 @@ if __name__ == '__main__':
             data_file_path = os.path.join(base_path, data_name + '.npy')
             ground_truth_path = os.path.join(base_path, data_name + '_gt.npy')
 
-            if "ae" in model_name:
-                endmembers_path = os.path.join(base_path, args.dataset[i] + '_m.npy')
-            else: 
-                endmembers_path = None
-                
             if data_name == 'urban':
                 sample_size, n_classes = 162, 6
             else:
@@ -161,7 +145,6 @@ if __name__ == '__main__':
 
             run_experiments(data_file_path=data_file_path,
                             ground_truth_path=ground_truth_path,
-                            endmembers_path=endmembers_path,
                             dest_path=dest_path,
                             train_size=args.train_size,
                             val_size=args.val_size,

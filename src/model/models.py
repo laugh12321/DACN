@@ -11,8 +11,7 @@ Created on Jan 29, 2021
 import sys
 import numpy as np
 import tensorflow as tf
-from src.model.attention import cbam_block, \
-    spatial_attention, channel_attention
+from src.model.attention import cbam_block
 
 
 def _get_model(model_key: str, **kwargs):
@@ -29,8 +28,7 @@ def _get_model(model_key: str, **kwargs):
     return all_[model_key](**kwargs)
 
 
-def rnn_supervised(n_classes: int, input_size: int, 
-                   **kwargs) -> tf.keras.Sequential:
+def rnn_supervised(n_classes: int, input_size: int) -> tf.keras.Sequential:
     """
     Model for the unmixing which utilizes a recurrent neural network (RNN)
     for extracting valuable information from the spectral domain
@@ -38,7 +36,6 @@ def rnn_supervised(n_classes: int, input_size: int,
 
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
     :return: RNN model instance.
     """
     model = tf.keras.Sequential()
@@ -52,8 +49,7 @@ def rnn_supervised(n_classes: int, input_size: int,
     return model
 
 
-def pixel_based_cnn(n_classes: int, input_size: int, 
-                    **kwargs) -> tf.keras.Sequential:
+def pixel_based_cnn(n_classes: int, input_size: int) -> tf.keras.Sequential:
     """
     Model for pixel-based supervised hyperspectral unmixing proposed in
     the following publication (Chicago style citation):
@@ -64,7 +60,6 @@ def pixel_based_cnn(n_classes: int, input_size: int,
 
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
     model = tf.keras.Sequential()
@@ -89,62 +84,10 @@ def pixel_based_cnn(n_classes: int, input_size: int,
     return model
 
 
-def pixel_based_dcae(n_classes: int, input_size: int,
-                     **kwargs) -> tf.keras.Sequential:
-    """
-    Model for pixel-based unsupervised hyperspectral unmixing proposed in
-    the following publication (Chicago style citation):
-    
-    Khajehrayeni, Farshid, and Hassan Ghassemian.
-    "Hyperspectral unmixing using deep convolutional autoencoders
-    in a supervised scenario."
-    IEEE Journal of Selected Topics in Applied Earth Observations
-    and Remote Sensing 13 (2020): 567-576.
-    
-    :param n_classes: Number of classes.
-    :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
-    :return: Model proposed in the publication listed above.
-    """
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv1D(filters=2, kernel_size=3,
-                                     activation='relu',
-                                     input_shape=(input_size, 1),
-                                     data_format='channels_last'))
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2)
-    model.add(tf.keras.layers.Conv1D(filters=4, kernel_size=3,
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
-    model.add(tf.keras.layers.Conv1D(filters=8, kernel_size=3,
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
-    model.add(tf.keras.layers.Conv1D(filters=16, kernel_size=3,
-                                     activation='relu'))
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
-    model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=3,
-                                     activation='relu'))
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(units=256, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=n_classes, activation='relu'))
-    model.add(tf.keras.layers.Softmax())
-    # Decoder part (later to be dropped):
-    model.add(tf.keras.layers.Dense(units=input_size, activation='relu'))
-    # Set the endmembers weights to be equal to the endmembers matrix i.e.,
-    # the spectral signatures of each class:
-    model.layers[-1].set_weights(
-        (np.swapaxes(kwargs['endmembers'], 1, 0), np.zeros(input_size)))
-    # Freeze the last layer which must be equal to endmembers
-    # and residual term (zero vector):
-    model.layers[-1].trainable = False
-    return model
-
-
-def pixel_based_fnnc(n_classes: int, input_size: int, 
-                     **kwargs) -> tf.keras.models.Model:
+def pixel_based_fnnc(n_classes: int, input_size: int) -> tf.keras.models.Model:
     """
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
     :return: FNNC model instance.
     """
     input = tf.keras.layers.Input(shape=(input_size, 1))
@@ -195,114 +138,50 @@ def pixel_based_fnnc(n_classes: int, input_size: int,
     return model
 
 
-def pixel_based_dacn(n_classes: int, input_size: int, 
-                     **kwargs) -> tf.keras.Sequential:
+def pixel_based_dacn(n_classes: int, input_size: int) -> tf.keras.models.Model:
     """
     Model for the hyperspectral unmixing which utilizes 
     a pixel-based Dual Attention Convolutional Network.
 
     :param n_classes: Number of classes.
     :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
     :return: Model proposed in the publication listed above.
     """
-    model = tf.keras.Sequential()
+    input = tf.keras.layers.Input(shape=(input_size, 1))
 
-    # Dual Attention Convolutional Block
-    model.add(tf.keras.layers.Conv1D(filters=8, kernel_size=5,
+
+    Conv1_1 = tf.keras.layers.Conv1D(filters=8, kernel_size=5,
                                      padding='same', use_bias=False,
                                      kernel_initializer='he_normal',
-                                     input_shape=(input_size, 1),
-                                     data_format='channels_last'))
-    model.add(tf.keras.layers.LayerNormalization(axis=1))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Conv1D(filters=16, kernel_size=3,
+                                     data_format='channels_last')(input)
+    LayerN_1 = tf.keras.layers.LayerNormalization(axis=1)(Conv1_1)
+    LeakyReLu1_1 = tf.keras.layers.LeakyReLU()(LayerN_1)
+    Conv1_2 = tf.keras.layers.Conv1D(filters=16, kernel_size=3,
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
+                                     kernel_initializer='he_normal')(LeakyReLu1_1)
+    LeakyReLu1_2 = tf.keras.layers.LeakyReLU()(Conv1_2)
+    Pooling_1 = tf.keras.layers.MaxPool1D(pool_size=2)(LeakyReLu1_2)
     # Convolutional Block Attention Module
-    model.add(channel_attention())
-    model.add(spatial_attention())
+    CBAM_1 = cbam_block(Pooling_1)
 
-    # Dual Attention Convolutional Block
-    model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=5,
+    #
+    Conv2_1 = tf.keras.layers.Conv1D(filters=32, kernel_size=5,
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LayerNormalization(axis=1))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=3,
+                                     kernel_initializer='he_normal')(CBAM_1)
+    LayerN_2 = tf.keras.layers.LayerNormalization(axis=1)(Conv2_1)
+    LeakyReLu2_1 = tf.keras.layers.LeakyReLU()(LayerN_2)
+    Conv2_2 = tf.keras.layers.Conv1D(filters=64, kernel_size=3,
                                      padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
+                                     kernel_initializer='he_normal')(LeakyReLu2_1)
+    LeakyReLu2_2 = tf.keras.layers.LeakyReLU()(Conv2_2)
+    Pooling_2 = tf.keras.layers.MaxPool1D(pool_size=2)(LeakyReLu2_2)
     # Convolutional Block Attention Module
-    model.add(channel_attention())
-    model.add(spatial_attention())
+    CBAM_2 = cbam_block(Pooling_2)
 
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(units=192, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=150, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=n_classes, activation='softmax'))
-    return model
+    flatten = tf.keras.layers.Flatten()(CBAM_2)
+    dense_1 = tf.keras.layers.Dense(units=192, activation='relu')(flatten)
+    dense_2 = tf.keras.layers.Dense(units=150, activation='relu')(dense_1)
+    dense_3 = tf.keras.layers.Dense(units=n_classes, activation='softmax')(dense_2)
 
-
-def pixel_based_dacae(n_classes: int, input_size: int, 
-                      **kwargs) -> tf.keras.Sequential:
-    """
-    Model for the hyperspectral unmixing which utilizes 
-    a pixel-based Dual Attention Convolutional Autoencoders.
-
-    :param n_classes: Number of classes.
-    :param input_size: Number of input spectral bands.
-    :param kwargs: Additional arguments.
-    :return: Model proposed in the publication listed above.
-    """
-    model = tf.keras.Sequential()
-
-    # Dual Attention Convolutional Block
-    model.add(tf.keras.layers.Conv1D(filters=8, kernel_size=5,
-                                     padding='same', use_bias=False,
-                                     kernel_initializer='he_normal',
-                                     input_shape=(input_size, 1),
-                                     data_format='channels_last'))
-    model.add(tf.keras.layers.LayerNormalization(axis=1))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Conv1D(filters=16, kernel_size=3,
-                                     padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
-    # Convolutional Block Attention Module
-    model.add(channel_attention())
-    model.add(spatial_attention())
-
-    # Dual Attention Convolutional Block
-    model.add(tf.keras.layers.Conv1D(filters=32, kernel_size=5,
-                                     padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LayerNormalization(axis=1))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=3,
-                                     padding='same', use_bias=False,
-                                     kernel_initializer='he_normal'))
-    model.add(tf.keras.layers.LeakyReLU())
-    model.add(tf.keras.layers.MaxPool1D(pool_size=2))
-    # Convolutional Block Attention Module
-    model.add(channel_attention())
-    model.add(spatial_attention())
-
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(units=256, activation='relu'))
-    model.add(tf.keras.layers.Dense(units=n_classes, activation='relu'))
-    model.add(tf.keras.layers.Softmax())
-    # Decoder part (later to be dropped):
-    model.add(tf.keras.layers.Dense(units=input_size, activation='relu'))
-    # Set the endmembers weights to be equal to the endmembers matrix i.e.,
-    # the spectral signatures of each class:
-    model.layers[-1].set_weights(
-        (np.swapaxes(kwargs['endmembers'], 1, 0), np.zeros(input_size)))
-    # Freeze the last layer which must be equal to endmembers
-    # and residual term (zero vector):
-    model.layers[-1].trainable = False
+    model = tf.keras.models.Model(inputs=input, outputs=dense_3)
     return model

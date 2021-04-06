@@ -14,8 +14,7 @@ from typing import List, Dict
 
 from src.model import enums
 from src.model.models import rnn_supervised, pixel_based_cnn, \
-    pixel_based_dcae, pixel_based_fnnc, \
-    pixel_based_dacn, pixel_based_dacae
+    pixel_based_fnnc, pixel_based_dacn
 
 
 class BaseTransform(abc.ABC):
@@ -88,42 +87,12 @@ def apply_transformations(data: Dict,
     return data
 
 
-class ExtractCentralPixelSpectrumTransform(BaseTransform):
-    def __init__(self):
-        """
-        Extract central pixel from each spatial sample.
-        :param neighborhood_size: The spatial size of the patch.
-        """
-        super().__init__()
-
-    def __call__(self, samples: np.ndarray,
-                 labels: np.ndarray) -> List[np.ndarray]:
-        """"
-        Transform the labels for unsupervised unmixing problem.
-        The label is the central pixel of each sample patch.
-        :param samples: Input samples.
-        :param labels: Central pixel of each sample.
-        :return: List containing the input samples
-            and its targets as central pixel.
-        """
-        labels = np.squeeze(samples)
-        return [samples, labels]
-
-
 UNMIXING_TRANSFORMS = {
     rnn_supervised.__name__: [SpectralTransform],
 
     pixel_based_cnn.__name__: [SpectralTransform],
 
-    pixel_based_dcae.__name__:
-        [ExtractCentralPixelSpectrumTransform,
-         SpectralTransform],
-
     pixel_based_fnnc.__name__: [SpectralTransform],
     
-    pixel_based_dacn.__name__: [SpectralTransform],
-
-    pixel_based_dacae.__name__:
-        [ExtractCentralPixelSpectrumTransform,
-         SpectralTransform]
+    pixel_based_dacn.__name__: [SpectralTransform]
 }
