@@ -74,7 +74,7 @@ def train(data: Dict[str, np.ndarray],
     time_history = time_metrics.TimeHistory()
 
     mcp_save = tf.keras.callbacks.ModelCheckpoint(
-        dest_path,
+        os.path.join(dest_path, 'model.h5'),
         save_best_only=True,
         monitor='val_loss',
         mode='min')

@@ -36,7 +36,7 @@ def evaluate(data,
     :param batch_size: Size of the batch for inference.
     """
     model = tf.keras.models.load_model(
-        dest_path, compile=True,
+        os.path.join(dest_path, 'model.h5'), compile=True,
         custom_objects={metric.__name__: metric for metric in
                         UNMIXING_TRAIN_METRICS[model_name]})
 
