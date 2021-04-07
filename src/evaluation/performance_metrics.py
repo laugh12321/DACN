@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 from typing import Dict, List
 
+from src.model.attention import channel_attention, spatial_attention
 from src.model.models import rnn_supervised, pixel_based_cnn, \
     pixel_based_fnnc, pixel_based_dacn
 
@@ -142,7 +143,27 @@ UNMIXING_TRAIN_METRICS = {
 
     pixel_based_dacn.__name__: [overall_rmse,
                                 overall_rms_abundance_angle_distance,
-                                sum_per_class_rmse],
+                                sum_per_class_rmse]
+}
+
+UNMIXING_EVAL_METRICS = {
+    rnn_supervised.__name__: [overall_rmse,
+                              overall_rms_abundance_angle_distance,
+                              sum_per_class_rmse],
+
+    pixel_based_cnn.__name__: [overall_rmse,
+                               overall_rms_abundance_angle_distance,
+                               sum_per_class_rmse],
+
+    pixel_based_fnnc.__name__: [overall_rmse,
+                               overall_rms_abundance_angle_distance,
+                               sum_per_class_rmse],
+
+    pixel_based_dacn.__name__: [overall_rmse,
+                                overall_rms_abundance_angle_distance,
+                                sum_per_class_rmse,
+                                channel_attention,
+                                spatial_attention]
 }
 
 UNMIXING_TEST_METRICS = {

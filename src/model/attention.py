@@ -16,6 +16,13 @@ class channel_attention(tf.keras.layers.Layer):
     def __init__(self, ratio=8, **kwargs):
         self.ratio = ratio
         super(channel_attention, self).__init__(**kwargs)
+    
+    def get_config(self):
+        config = super(channel_attention, self).get_config().copy()
+        config.update({
+            'ratio': self.ratio
+        })
+        return config
 
     def build(self, input_shape):
         channel = input_shape[-1]
@@ -57,6 +64,13 @@ class spatial_attention(tf.keras.layers.Layer):
     def __init__(self, kernel_size=7, **kwargs):
         self.kernel_size = kernel_size
         super(spatial_attention, self).__init__(**kwargs)
+
+    def get_config(self):
+        config = super(spatial_attention, self).get_config().copy()
+        config.update({
+            'kernel_size': self.kernel_size
+        })
+        return config
 
     def build(self, input_shape):
         self.conv = tf.keras.layers.Conv1D(filters=1, kernel_size=self.kernel_size,

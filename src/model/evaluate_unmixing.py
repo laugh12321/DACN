@@ -17,7 +17,7 @@ from src.utils import io, transforms
 from src.evaluation.time_metrics import timeit
 from src.utils.transforms import UNMIXING_TRANSFORMS
 from src.utils.utils import get_central_pixel_spectrum
-from src.evaluation.performance_metrics import UNMIXING_TRAIN_METRICS,\
+from src.evaluation.performance_metrics import UNMIXING_EVAL_METRICS, \
     calculate_unmixing_metrics
 
 
@@ -38,7 +38,7 @@ def evaluate(data,
     model = tf.keras.models.load_model(
         os.path.join(dest_path, 'model.h5'), compile=True,
         custom_objects={metric.__name__: metric for metric in
-                        UNMIXING_TRAIN_METRICS[model_name]})
+                        UNMIXING_EVAL_METRICS[model_name]})
 
     test_dict = data[enums.Dataset.TEST]
 
