@@ -21,13 +21,13 @@ from src.model.models import rnn_supervised, pixel_based_cnn, \
 
 # Literature hyperparameters settings:
 LEARNING_RATES = {
-    rnn_supervised.__name__: 0.001,
+    rnn_supervised.__name__: 1e-3,
 
-    pixel_based_cnn.__name__: 0.01,
+    pixel_based_cnn.__name__: 1e-2,
 
-    pixel_based_fnnc.__name__: 0.0001,
+    pixel_based_fnnc.__name__: 1e-4,
 
-    pixel_based_dacn.__name__: 9e-04
+    pixel_based_dacn.__name__: 9e-4
 }
 
 
