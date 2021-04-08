@@ -7,14 +7,26 @@ Hyperspectral image unmixing of convolutional neural network (No fork, semi-fini
 <table>
     <tr>
         <td>
-            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/figures/Jasper%20Ridge.png>
+            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/Jasper%20Ridge.png>
         </td>
         <td>
-            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/figures/Urban.png>
+            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/Urban.png>
         </td>
     </tr>
 </table>
 
+<table>
+    <tr>
+        <td>
+            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/Learning%20Rate.png>
+        </td>
+        <td>
+            <img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/rmsAAD.png>
+        </td>
+    </tr>
+</table>
+
+<img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/estimated_abundances.png>
 
 ## Prerequisites
 
