@@ -46,7 +46,7 @@ We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datase
     </tr>
 </table>
 
-After setting the parameters in [`config/config.json`](https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/config/config.json), enter the following command in the terminal:
+After setting the parameters in [`config/config.json`](config/config.json), enter the following command in the terminal:
 
 ```
 python run.py
