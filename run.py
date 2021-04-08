@@ -16,23 +16,18 @@ from src.model import enums
 from src.utils.utils import parse_train_size, subsample_test_set
 from src.utils import prepare_data, artifacts_reporter
 from src.model import evaluate_unmixing, train_unmixing
-from src.model.models import  pixel_based_cnn, cube_based_cnn, \
-    pixel_based_dacn, cube_based_dacn
+from src.model.models import rnn_supervised, pixel_based_cnn, \
+    pixel_based_fnnc, pixel_based_dacn
 
 # Literature hyperparameters settings:
-NEIGHBORHOOD_SIZES = {
-    cube_based_cnn.__name__: 3,
-
-    cube_based_dacn.__name__: 3
-}
-
 LEARNING_RATES = {
-    pixel_based_cnn.__name__: 0.01,
-    cube_based_cnn.__name__: 0.0005,
+    rnn_supervised.__name__: 1e-3,
 
+    pixel_based_cnn.__name__: 1e-2,
 
-    pixel_based_dacn.__name__: 3e-3,
-    cube_based_dacn.__name__: 9e-4
+    pixel_based_fnnc.__name__: 1e-4,
+
+    pixel_based_dacn.__name__: 9e-4
 }
 
 
@@ -42,7 +37,6 @@ def run_experiments(*,
                     train_size: int or float,
                     val_size: float = 0.1,
                     sub_test_size: int = None,
-                    neighborhood_size: int = None,
                     n_runs: int = 4,
                     model_name: str,
                     dest_path: str = None,
@@ -70,7 +64,6 @@ def run_experiments(*,
     :param sub_test_size: Number of pixels to subsample the test set
         instead of performing the inference on all
         samples that are not in the training set.
-    :param neighborhood_size: Size of the spatial patch.
     :param n_runs: Number of total experiment runs.
     :param model_name: Name of the model, it serves as a key in the
         dictionary holding all functions returning models.
@@ -94,8 +87,6 @@ def run_experiments(*,
         os.makedirs(experiment_dest_path, exist_ok=True)
 
         # Apply default literature hyper parameters:
-        if neighborhood_size is None and model_name in NEIGHBORHOOD_SIZES:
-            neighborhood_size = NEIGHBORHOOD_SIZES[model_name]
         if lr is None and model_name in LEARNING_RATES:
             lr = LEARNING_RATES[model_name]
 
@@ -104,7 +95,6 @@ def run_experiments(*,
                                  ground_truth_path=ground_truth_path,
                                  train_size=parse_train_size(train_size),
                                  val_size=val_size,
-                                 neighborhood_size=neighborhood_size,
                                  seed=experiment_id)
         # Subsample the test set to constitute a constant size:                        
         if sub_test_size is not None:
@@ -115,7 +105,6 @@ def run_experiments(*,
                              dest_path=experiment_dest_path,
                              data=data,
                              sample_size=sample_size,
-                             neighborhood_size=neighborhood_size,
                              n_classes=n_classes,
                              lr=lr,
                              batch_size=batch_size,
@@ -129,7 +118,6 @@ def run_experiments(*,
             model_name=model_name,
             data=data,
             dest_path=experiment_dest_path,
-            neighborhood_size=neighborhood_size,
             batch_size=batch_size)
         tf.keras.backend.clear_session()
 
@@ -142,15 +130,15 @@ if __name__ == '__main__':
     args = get_config(filename='./config/config.json')
 
     for model_name in args.model_names:
-        for i in range(len(args.dataset)):
+        for data_name in args.dataset:
             dest_path = os.path.join(args.save_path,
-                                    '{}_{}'.format(str(model_name), str(args.dataset[i])))
+                                    '{}_{}'.format(str(model_name), str(data_name)))
 
-            base_path = os.path.join(args.path, args.dataset[i])
-            data_file_path = os.path.join(base_path, args.dataset[i] + '.npy')
-            ground_truth_path = os.path.join(base_path, args.dataset[i] + '_gt.npy')
+            base_path = os.path.join(args.path, data_name)
+            data_file_path = os.path.join(base_path, data_name + '.npy')
+            ground_truth_path = os.path.join(base_path, data_name + '_gt.npy')
 
-            if args.dataset[i] == 'urban':
+            if data_name == 'urban':
                 sample_size, n_classes = 162, 6
             else:
                 sample_size, n_classes = 157, 4
@@ -158,8 +146,7 @@ if __name__ == '__main__':
             run_experiments(data_file_path=data_file_path,
                             ground_truth_path=ground_truth_path,
                             dest_path=dest_path,
-                            train_size=args.train_size[i],
-                            sub_test_size=args.test_size[i],
+                            train_size=args.train_size,
                             val_size=args.val_size,
                             model_name=model_name,
                             sample_size=sample_size,

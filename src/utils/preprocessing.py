@@ -20,7 +20,7 @@ WIDTH = 1
 DEPTH = 2
 
 
-def reshape_cube_to_2d_samples(data: np.ndarray,
+def reshape_cube_to_1d_samples(data: np.ndarray,
                                labels: np.ndarray,
                                channels_idx: int = 0) -> \
         Tuple[np.ndarray, np.ndarray]:
@@ -38,62 +38,11 @@ def reshape_cube_to_2d_samples(data: np.ndarray,
     data = np.rollaxis(data, channels_idx, len(data.shape))
     height, width, channels = data.shape
     data = data.reshape(height * width, channels)
-    data = np.expand_dims(np.expand_dims(data, 1), 1)
     labels = labels.reshape(height * width, -1)
     data = data.astype(np.float32)
     labels = labels.astype(np.float32)
 
     return data, labels
-
-
-def get_padded_cube(data: np.ndarray, padding_size: int) -> np.ndarray:
-    """
-    Pad the cube with zeros
-
-    :param data: Data to pad
-    :param padding_size: Size of the padding for each side
-    :return: Padded cube
-    """
-    v_padding = np.zeros((padding_size, data.shape[WIDTH], data.shape[DEPTH]))
-    data = np.vstack((v_padding, data))
-    data = np.vstack((data, v_padding))
-    h_padding = np.zeros((data.shape[HEIGHT], padding_size, data.shape[DEPTH]))
-    data = np.hstack((h_padding, data))
-    data = np.hstack((data, h_padding))
-    return data
-
-
-def reshape_cube_to_3d_samples(data: np.ndarray,
-                               labels: np.ndarray,
-                               neighborhood_size: int = 5,
-                               channels_idx: int = 0) -> \
-        Tuple[np.ndarray, np.ndarray]:
-    """
-    Reshape data to a array of dimensionality:
-    [N_SAMPLES, HEIGHT, WIDTH, CHANNELS] and the labels
-    to dimensionality of: [N_SAMPLES, N_CLASSES]
-
-    :param data: Data passed as array.
-    :param labels: Labels passed as array.
-    :param neighborhood_size: Length of the spatial patch.
-    :param channels_idx: Index of the channels.
-    :rtype: Tuple of data and labels reshaped to 3D format.
-    """
-    data = np.rollaxis(data, channels_idx, len(data.shape))
-    height, width, _ = data.shape
-    padding_size = int(neighborhood_size % np.ceil(float(neighborhood_size) / 2.))
-    data = get_padded_cube(data, padding_size)
-    samples = []
-    labels_3d = []
-    data = data.astype(np.float32)
-    for x, y in product(list(range(height)), list(range(width))):
-        samples.append(data[x:x + padding_size * 2 + 1,
-                       y:y + padding_size * 2 + 1])
-        labels_3d.append(labels[x, y])
-    samples = np.array(samples).astype(np.float32)
-    labels3d = np.array(labels_3d).astype(np.float32)
-
-    return samples, labels3d
 
 
 def remove_nan_samples(data: np.ndarray, labels: np.ndarray) -> Tuple[

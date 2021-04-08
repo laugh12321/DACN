@@ -16,18 +16,25 @@ class channel_attention(tf.keras.layers.Layer):
     def __init__(self, ratio=8, **kwargs):
         self.ratio = ratio
         super(channel_attention, self).__init__(**kwargs)
+    
+    def get_config(self):
+        config = super(channel_attention, self).get_config().copy()
+        config.update({
+            'ratio': self.ratio
+        })
+        return config
 
     def build(self, input_shape):
         channel = input_shape[-1]
         self.shared_layer_one = tf.keras.layers.Dense(channel // self.ratio,
-                                                 activation='relu',
-                                                 kernel_initializer='he_normal',
-                                                 use_bias=True,
-                                                 bias_initializer='zeros')
+                                                      activation='relu',
+                                                      kernel_initializer='he_normal',
+                                                      use_bias=True,
+                                                      bias_initializer='zeros')
         self.shared_layer_two = tf.keras.layers.Dense(channel,
-                                                 kernel_initializer='he_normal',
-                                                 use_bias=True,
-                                                 bias_initializer='zeros')
+                                                      kernel_initializer='he_normal',
+                                                      use_bias=True,
+                                                      bias_initializer='zeros')
         super(channel_attention, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):
@@ -36,13 +43,13 @@ class channel_attention(tf.keras.layers.Layer):
     def call(self, inputs):
         channel = inputs.get_shape().as_list()[-1]
 
-        avg_pool = tf.keras.layers.GlobalAveragePooling3D()(inputs)    
-        avg_pool = tf.keras.layers.Reshape((1, 1, 1, channel))(avg_pool)
+        avg_pool = tf.keras.layers.GlobalAveragePooling1D()(inputs)    
+        avg_pool = tf.keras.layers.Reshape((1, channel))(avg_pool)
         avg_pool = self.shared_layer_one(avg_pool)
         avg_pool = self.shared_layer_two(avg_pool)
 
-        max_pool = tf.keras.layers.GlobalMaxPooling3D()(inputs)
-        max_pool = tf.keras.layers.Reshape((1, 1, 1, channel))(max_pool)
+        max_pool = tf.keras.layers.GlobalMaxPooling1D()(inputs)
+        max_pool = tf.keras.layers.Reshape((1, channel))(max_pool)
         max_pool = self.shared_layer_one(max_pool)
         max_pool = self.shared_layer_two(max_pool)
 
@@ -58,10 +65,17 @@ class spatial_attention(tf.keras.layers.Layer):
         self.kernel_size = kernel_size
         super(spatial_attention, self).__init__(**kwargs)
 
+    def get_config(self):
+        config = super(spatial_attention, self).get_config().copy()
+        config.update({
+            'kernel_size': self.kernel_size
+        })
+        return config
+
     def build(self, input_shape):
-        self.conv3d = tf.keras.layers.Conv3D(filters=1, kernel_size=self.kernel_size,
-                                             strides=1, padding='same', activation='sigmoid',
-                                             kernel_initializer='he_normal', use_bias=False)
+        self.conv = tf.keras.layers.Conv1D(filters=1, kernel_size=self.kernel_size,
+                                           strides=1, padding='same', activation='sigmoid',
+                                           kernel_initializer='he_normal', use_bias=False)
         super(spatial_attention, self).build(input_shape)
 
     def compute_output_shape(self, input_shape):
@@ -71,19 +85,19 @@ class spatial_attention(tf.keras.layers.Layer):
         avg_pool = tf.keras.layers.Lambda(lambda x: tf.keras.backend.mean(x, axis=-1, keepdims=True))(inputs)
         max_pool = tf.keras.layers.Lambda(lambda x: tf.keras.backend.max(x, axis=-1, keepdims=True))(inputs)
         concat = tf.keras.layers.Concatenate(axis=-1)([avg_pool, max_pool])
-        feature = self.conv3d(concat)	
+        feature = self.conv(concat)	
             
         return tf.keras.layers.multiply([inputs, feature])
 
 
-def cbam_block(cbam_feature, ratio=8, kernel_size=7):
+def cbam_block(inputs, ratio=8, kernel_size=7):
     """
     Contains the implementation of Convolutional Block Attention Module(CBAM) block.
     As described in https://arxiv.org/abs/1807.06521.
     """
 
-    feature = channel_attention(ratio=ratio)()
-    feature = spatial_attention(cbam_feature)
+    feature = channel_attention(ratio=ratio)(inputs)
+    feature = spatial_attention(kernel_size=kernel_size)(feature)
 
-    return cbam_feature
+    return feature
     

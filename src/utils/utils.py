@@ -106,18 +106,13 @@ def restructure_per_class_accuracy(metrics: Dict[str, List[float]]) -> Dict[
     return metrics
 
 
-def get_central_pixel_spectrum(data: np.ndarray,
-                               neighborhood_size: int) -> np.ndarray:
+def get_central_pixel_spectrum(data: np.ndarray) -> np.ndarray:
     """
     If the model is an autoencoder, get the central pixel
     spectrum as its reconstruction original sample.
 
     :param data: The data cube used for training the autoencoder.
-    :param neighborhood_size: Spatial size of the patch.
     """
-    if neighborhood_size is not None:
-        central_index = np.floor(neighborhood_size / 2).astype(int)
-        return np.squeeze(data[:, central_index, central_index])
     return np.squeeze(data)
 
 
