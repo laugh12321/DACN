@@ -4,6 +4,8 @@ Hyperspectral image unmixing of convolutional neural network (No fork, semi-fini
 
 ## Descriptions
 
+<img src=https://github.com/laugh12321/Hyperspectral-Imagery-Unmixing/blob/main/images/Architecture.png>
+
 <table>
     <tr>
         <td>
