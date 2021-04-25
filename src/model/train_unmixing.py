@@ -86,8 +86,8 @@ def train(data: Dict[str, np.ndarray],
 
     callbacks = [time_history, mcp_save, early_stopping]
 
-    train_dict = data[enums.Dataset.TRAIN]
-    val_dict = data[enums.Dataset.VAL]
+    train_dict = data[enums.Dataset.TRAIN].copy()
+    val_dict = data[enums.Dataset.VAL].copy()
 
     min_, max_ = data[enums.DataStats.MIN], data[enums.DataStats.MAX]
 
