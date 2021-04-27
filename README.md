@@ -1,6 +1,6 @@
-# Hyperspectral Unmixing (半成品，禁止Fork!!!!!)
+# DACN (半成品，禁止Fork!!!!!)
 
-Hyperspectral image unmixing of convolutional neural network (No fork, semi-finished products)
+ (No fork, semi-finished products)
 
 <div align=center> 
     <img src='images/Architecture.png'>
