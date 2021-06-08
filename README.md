@@ -1,17 +1,17 @@
-# DACN (半成品，禁止Fork!!!!!)
+# DACN 
 
- (No fork, semi-finished products)
+## Introduction
+
+In this article, we design an end-to-end HU method based on dual attention convolutional neural network (DACN), which adds two types of attention modules on the basis of feature extraction by CNN, and models the semantic information on spectral-spatial dimensions to adaptively fuse local and global features. Furthermore, Layer normalization and Maxpooling are used on DACN to avoid over fitting. The evaluation of the complete performance is carried out on two hyperspectral datasets: Jasper Ridge and Urban. Compared with that of the existing method, our method can extract spectral-spatial feature information more effectively, and the precision is improved significantly.
+
+### Network Architecture
 
 <div align=center> 
     <img src='images/Architecture.png'>
     Fig 1. Architecture of DACN with spectral–spatial feature extraction of HSI.
 </div>
 
-## Citation
-
-If you find DACN useful in your research, please consider citing.
-
-## Setup
+## Prerequisites
 
 - Python 3.8
 - TensorFlow 2.3.0
@@ -20,16 +20,6 @@ Recommend use conda create a virtual environment and to install dependencies usi
 ```
 pip install -r requirements.txt
 ```
-
-## Datasets
-
-We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datasets](datasets).
-
-- <b>data.npy:</b> hyperspectral data file.
-
-- <b>data_gt.npy:</b> ground truth file.
-
-- <b>data_m.npy:</b> endmembers file.
 
 ## Usage
 
@@ -42,6 +32,16 @@ python run.py
 <b>More Details:</b>
 
 Use `python run.py -h` to get more parameters setting details.
+
+### Datasets
+
+We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datasets](datasets).
+
+- <b>data.npy:</b> hyperspectral data file.
+
+- <b>data_gt.npy:</b> ground truth file.
+
+- <b>data_m.npy:</b> endmembers file.
 
 ## Unmixing Result
 
@@ -75,6 +75,10 @@ Use `python run.py -h` to get more parameters setting details.
     <img src='images/Estimated%20Abundances.png'>
     Fig 6. Ground-truth and estimated abundances obtained for each endmember material in the Urban datasets by different methods.
 </div>
+
+## Citation
+
+If you find DACN useful in your research, please consider citing.
 
 ## Misc.
 
