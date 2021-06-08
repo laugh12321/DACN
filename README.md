@@ -59,7 +59,7 @@ Use `python run.py -h` to get more parameters setting details.
 ## Unmixing Result
 
 <div align=center> 
-    <img src='images/estimated_abundances.png'>
+    <img src='images/Estimated%20Abundances.png'>
     Fig 4. Ground-truth and estimated abundances obtained for each endmember material in the Urban data set by different methods.
 </div>
 
