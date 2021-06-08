@@ -21,7 +21,7 @@ Recommend use conda create a virtual environment and to install dependencies usi
 pip install -r requirements.txt
 ```
 
-## Dataset
+## Datasets
 
 We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datasets](datasets).
 
@@ -32,19 +32,6 @@ We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datase
 - <b>data_m.npy:</b> endmembers file.
 
 ## Usage
-
-<table>
-    <tr>
-        <td>
-            <img src='images/Learning%20Rate.png'>
-            Fig 2. Quantitative analysis of learning rate for the DACN method in the Jasper Ridge data set.
-        </td>
-        <td>
-            <img src='images/rmsAAD.png'>
-            Fig 3. rmsAAD values of the Jasper Ridge and Urban data set by different methods.
-        </td>
-    </tr>
-</table>
 
 After setting the parameters in [`config/config.json`](config/config.json), enter the following command in the terminal:
 
@@ -58,9 +45,35 @@ Use `python run.py -h` to get more parameters setting details.
 
 ## Unmixing Result
 
+<table>
+    <tr>
+        <td>
+            <img src='images/Jasper%20Loss.png'>
+            Fig 2. training loss of the Jasper Ridge datasets by different methods.
+        </td>
+        <td>
+            <img src='images/Urban%20Loss.png'>
+            Fig 3. training loss of the Urban datasets by different methods.
+        </td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td>
+            <img src='images/Learning%20Rate.png'>
+            Fig 4. Quantitative analysis of learning rate for the DACN method in the Jasper Ridge datasets.
+        </td>
+        <td>
+            <img src='images/rmsAAD.png'>
+            Fig 5. rmsAAD values of the Jasper Ridge and Urban datasets by different methods.
+        </td>
+    </tr>
+</table>
+
 <div align=center> 
     <img src='images/Estimated%20Abundances.png'>
-    Fig 4. Ground-truth and estimated abundances obtained for each endmember material in the Urban data set by different methods.
+    Fig 6. Ground-truth and estimated abundances obtained for each endmember material in the Urban datasets by different methods.
 </div>
 
 ## Misc.
