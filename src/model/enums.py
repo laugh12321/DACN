@@ -2,7 +2,7 @@
 Created on Jan 29, 2021
 
 @file: enums.py
-@desc:
+@desc: Setting enumeration types
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """

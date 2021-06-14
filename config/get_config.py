@@ -4,7 +4,7 @@
 Created on 1月 30, 2021 
 
 @file: get_config.py
-@desc: 
+@desc: get parameters
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
