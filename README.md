@@ -1,15 +1,17 @@
+<div align=center> 
+    <img src='images/Architecture.png'>
+</div>
+
 # DACN 
 
+**Hyperspectral Unmixing via Dual Attention Convolutional Neural Networks**
+
+[Pengbo Zhang](https://github.com/laugh12321)
+
+> Graduation Thesis of Henan Polytechnic University.
 ## Introduction
 
 In this article, we design an end-to-end hyperspectral unmixing method based on dual attention convolutional neural network (DACN), which adds two types of attention modules on the basis of feature extraction by CNN, and models the semantic information on spectral-spatial dimensions to adaptively fuse local and global features. Furthermore, Layer normalization and Maxpooling are used on DACN to avoid over fitting. The evaluation of the complete performance is carried out on two hyperspectral datasets: Jasper Ridge and Urban. Compared with that of the existing method, our method can extract spectral-spatial feature information more effectively, and the precision is improved significantly.
-
-### Network Architecture
-
-<div align=center> 
-    <img src='images/Architecture.png'>
-    Fig 1. Architecture of DACN with spectral–spatial feature extraction of HSI.
-</div>
 
 ## Requirement
 
