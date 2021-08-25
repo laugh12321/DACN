@@ -33,7 +33,7 @@ python run.py
 
 <div align=center> 
     <img src='images/Learning%20Rate.png'>
-    Fig 2. Quantitative analysis of learning rate for the DACN method in the Jasper Ridge datasets.
+    Fig 1. Quantitative analysis of learning rate for the DACN method in the Jasper Ridge datasets.
 </div>
 
 <b>More Details:</b>
@@ -58,11 +58,11 @@ We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datase
     <tr>
         <td>
             <img src='images/Jasper%20Loss.png'>
-            Fig 3. training loss of the Jasper Ridge datasets by different methods.
+            Fig 2. training loss of the Jasper Ridge datasets by different methods.
         </td>
         <td>
             <img src='images/Urban%20Loss.png'>
-            Fig 4. training loss of the Urban datasets by different methods.
+            Fig 3. training loss of the Urban datasets by different methods.
         </td>
     </tr>
 </table>
@@ -71,13 +71,13 @@ We provide two processed datasets: Jasper Ridge(jasper), Urban(urban) in [datase
 
 <div align=center> 
     <img src='images/rmsAAD.png'>
-    Fig 5. rmsAAD values of the Jasper Ridge and Urban datasets by different methods.
+    Fig 4. rmsAAD values of the Jasper Ridge and Urban datasets by different methods.
 </div>
 
 
 <div align=center> 
     <img src='images/Estimated%20Abundances.png'>
-    Fig 6. Ground-truth and estimated abundances obtained for each endmember material in the Urban datasets by different methods.
+    Fig 5. Ground-truth and estimated abundances obtained for each endmember material in the Urban datasets by different methods.
 </div>
 
 ## Citation
