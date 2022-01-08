@@ -1,4 +1,4 @@
-aenum~=3.0.0
-numpy~=1.19.2
-tensorflow~=2.3.0
-tensorflow-gpu~=2.3.0
+aenum>=3.0.0
+numpy>=1.19.2
+tensorflow>=2.4.4
+tensorflow-gpu>=2.4.4
