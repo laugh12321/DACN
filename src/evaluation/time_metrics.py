@@ -17,32 +17,38 @@ class TimeHistory(Callback):
     Custom keras callback logging duration of each epoch.
     """
 
-    def on_train_begin(self, logs: dict = {}):
+    def on_train_begin(self, logs: dict = None):
         """
         Initialize attributes.
 
         :param logs: Dictionary containing time measures.
         """
+        if logs is None:
+            logs = {}
         self.on_train_begin_time = time()
         self.times = []
         self.average = []
 
-    def on_epoch_begin(self, batch: int, logs: dict = {}):
+    def on_epoch_begin(self, batch: int, logs: dict = None):
         """
         Start counting time for epoch.
 
         :param batch: Number of batch.
         :param logs: Dictionary containing time measures.
         """
+        if logs is None:
+            logs = {}
         self.epoch_time_start = time()
 
-    def on_epoch_end(self, batch: int, logs: dict = {}):
+    def on_epoch_end(self, batch: int, logs: dict = None):
         """
         End counting time for epoch.
 
         :param batch: Number of epochs.
         :param logs: Dictionary containing time measures.
         """
+        if logs is None:
+            logs = {}
         self.times.append(time() - self.on_train_begin_time)
         self.average.append(time() - self.epoch_time_start)
 
