@@ -25,7 +25,6 @@ class BaseTransform(abc.ABC):
         :param args: Arbitrary list of arguments.
         :param kwargs: Arbitrary dictionary of arguments.
         """
-        pass
 
 
 class SpectralTransform(BaseTransform):
