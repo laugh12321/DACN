@@ -37,7 +37,8 @@ class channel_attention(tf.keras.layers.Layer):
                                                       bias_initializer='zeros')
         super(channel_attention, self).build(input_shape)
 
-    def compute_output_shape(self, input_shape):
+    @staticmethod
+    def compute_output_shape(input_shape):
         return input_shape
 
     def call(self, inputs):
@@ -78,7 +79,8 @@ class spatial_attention(tf.keras.layers.Layer):
                                            kernel_initializer='he_normal', use_bias=False)
         super(spatial_attention, self).build(input_shape)
 
-    def compute_output_shape(self, input_shape):
+    @staticmethod
+    def compute_output_shape(input_shape):
         return input_shape
 
     def call(self, inputs):
