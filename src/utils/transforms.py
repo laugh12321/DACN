@@ -29,9 +29,7 @@ class BaseTransform(abc.ABC):
 
 class SpectralTransform(BaseTransform):
     def __init__(self, **kwargs):
-        """
-        Initializer of the spectral transformation.
-        """
+        """Initializer of the spectral transformation."""
         super().__init__()
 
     def __call__(self, samples: np.ndarray,
