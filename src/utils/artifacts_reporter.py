@@ -33,8 +33,8 @@ def collect_artifacts_report(*,
         Defaults to 'inference_metrics.csv'.
     """
     all_metrics = io.load_metrics(experiments_path, filename)
-    metric_keys = set(tuple(metric_keys)
-                      for metric_keys in all_metrics['metric_keys'])
+    metric_keys = {tuple(metric_keys)
+                      for metric_keys in all_metrics['metric_keys']}
     assert len(metric_keys) == 1, \
         'The metric names should be consistent across all experiment runs.'
     artifacts = {metric_key: [] for metric_key in next(iter(metric_keys))}
