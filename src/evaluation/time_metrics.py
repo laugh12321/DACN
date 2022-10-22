@@ -13,9 +13,7 @@ from tensorflow.keras.callbacks import Callback
 
 
 class TimeHistory(Callback):
-    """
-    Custom keras callback logging duration of each epoch.
-    """
+    """Custom keras callback logging duration of each epoch."""
 
     def on_train_begin(self, logs: dict = None):
         """
@@ -54,9 +52,7 @@ class TimeHistory(Callback):
 
 
 def timeit(function):
-    """
-    Time passed function as a decorator.
-    """
+    """Time passed function as a decorator."""
     def timed(*args: list, **kwargs: dict):
         """
         Measure time of given function.
