@@ -90,6 +90,6 @@ UNMIXING_TRANSFORMS = {
     pixel_based_cnn.__name__: [SpectralTransform],
 
     pixel_based_fnnc.__name__: [SpectralTransform],
-    
+
     pixel_based_dacn.__name__: [SpectralTransform]
 }

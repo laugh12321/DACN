@@ -16,7 +16,7 @@ class channel_attention(tf.keras.layers.Layer):
     def __init__(self, ratio=8, **kwargs):
         self.ratio = ratio
         super(channel_attention, self).__init__(**kwargs)
-    
+
     def get_config(self):
         config = super(channel_attention, self).get_config().copy()
         config.update({
@@ -88,7 +88,7 @@ class spatial_attention(tf.keras.layers.Layer):
         max_pool = tf.keras.layers.Lambda(lambda x: tf.keras.backend.max(x, axis=-1, keepdims=True))(inputs)
         concat = tf.keras.layers.Concatenate(axis=-1)([avg_pool, max_pool])
         feature = self.conv(concat)	
-            
+
         return tf.keras.layers.multiply([inputs, feature])
 
 
@@ -101,4 +101,4 @@ def cbam_block(inputs, ratio=8, kernel_size=7):
     feature = spatial_attention(kernel_size=kernel_size)(feature)
 
     return feature
-    
+
