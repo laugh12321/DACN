@@ -180,7 +180,7 @@ UNMIXING_LOSSES = {
     pixel_based_cnn.__name__: 'mse',
 
     pixel_based_fnnc.__name__: 'mse',
-    
+
     pixel_based_dacn.__name__: 'mse'
 }
 

@@ -120,7 +120,7 @@ def pixel_based_fnnc(n_classes: int, input_size: int) -> tf.keras.models.Model:
 
     Den1 = tf.keras.layers.Dense(units=600, activation='relu', use_bias=None)(Con)
     Global = tf.keras.layers.Dense(units=150, activation='relu', use_bias=None)(Den1)
-    
+
     Abadunce = tf.keras.layers.Reshape((1, 150))(Global)
     Abadunce = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=100, dropout=0.2))(Abadunce)
     Abadunce = tf.keras.layers.BatchNormalization()(Abadunce)
@@ -133,7 +133,7 @@ def pixel_based_fnnc(n_classes: int, input_size: int) -> tf.keras.models.Model:
                                                                   kernel_regularizer=tf.keras.regularizers.l2(1e-4)))(Abadunce)
     Abadunce = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=1, activation='sigmoid'))(Abadunce)
     Abadunce = tf.keras.backend.squeeze(Abadunce, axis=-1)
-    
+
     model = tf.keras.models.Model(inputs=input, outputs=Abadunce)
     return model
 
