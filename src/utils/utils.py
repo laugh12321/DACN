@@ -24,8 +24,9 @@ def subsample_test_set(data: Dict, test_size: int) -> None:
     :param data: The test data dictionary.
     :param test_size: Size of the test samples to remain.
     """
-    assert data[enums.Dataset.DATA].shape[SAMPLES_DIM] >= test_size and \
-           data[enums.Dataset.LABELS].shape[SAMPLES_DIM] >= test_size
+    if not (data[enums.Dataset.DATA].shape[SAMPLES_DIM] >= test_size and \
+           data[enums.Dataset.LABELS].shape[SAMPLES_DIM] >= test_size):
+        raise AssertionError
     data[enums.Dataset.DATA] = data[enums.Dataset.DATA][-test_size:]
     data[enums.Dataset.LABELS] = data[enums.Dataset.LABELS][-test_size:]
 
@@ -39,7 +40,8 @@ def shuffle_arrays_together(arrays: List[np.ndarray], seed: int = 0) -> None:
     :raises AssertionError: When provided arrays have different sizes along 
                             first dimension
     """
-    assert all(len(array) == len(arrays[0]) for array in arrays)
+    if not all(len(array) == len(arrays[0]) for array in arrays):
+        raise AssertionError
     for array in arrays:
         random_state = np.random.RandomState(seed)
         random_state.shuffle(array)

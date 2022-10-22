@@ -123,7 +123,8 @@ def _get_set_indices(size: Union[List, float, int],
 
 @_get_set_indices.register(float)
 def _(size: float, labels: np.ndarray) -> np.ndarray:
-    assert 0 < size <= 1
+    if not 0 < size <= 1:
+        raise AssertionError
     train_indices = np.arange(int(len(labels) * size))
 
     return train_indices
@@ -131,7 +132,8 @@ def _(size: float, labels: np.ndarray) -> np.ndarray:
 
 @_get_set_indices.register(int)
 def _(size: int, labels: np.ndarray) -> np.ndarray:
-    assert size >= 1
+    if size < 1:
+        raise AssertionError
     train_indices = np.arange(size, dtype=int)
 
     return train_indices
