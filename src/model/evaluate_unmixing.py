@@ -9,7 +9,6 @@ Created on Jan 29, 2021
 @contact: laugh12321@vip.qq.com
 """
 import os
-import numpy as np
 import tensorflow as tf
 
 import src.model.enums as enums
