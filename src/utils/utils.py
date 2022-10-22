@@ -131,8 +131,7 @@ def parse_train_size(train_size: List) -> Union[float, int, List[int]]:
         train_size = float(train_size[0])
         if 0.0 <= train_size <= 1:
             return float(train_size)
-        else:
-            return int(train_size)
+        return int(train_size)
     else:
         return list(map(int, train_size))
 
@@ -149,5 +148,4 @@ def get_label_indices_per_class(labels, return_uniques: bool = True):
     label_indices = [np.where(labels == label)[0] for label in unique_labels]
     if return_uniques:
         return label_indices, unique_labels
-    else:
-        return label_indices
+    return label_indices
