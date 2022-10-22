@@ -54,12 +54,10 @@ class TimeHistory(Callback):
 def timeit(function):
     """Time passed function as a decorator."""
     def timed(*args: list, **kwargs: dict):
-        """
-        Measure time of given function.
+        """Measure time of given function.
 
         :param args: List of arguments of given function.
-        :param kwargs: Dictionary of arguments of given function.
-        """
+        :param kwargs: Dictionary of arguments of given function."""
         start = time()
         result = function(*args, **kwargs)
         stop = time()
