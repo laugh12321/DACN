@@ -97,7 +97,6 @@ def cbam_block(inputs, ratio=8, kernel_size=7):
     Contains the implementation of Convolutional Block Attention Module(CBAM) block.
     As described in https://arxiv.org/abs/1807.06521.
     """
-
     feature = channel_attention(ratio=ratio)(inputs)
     feature = spatial_attention(kernel_size=kernel_size)(feature)
 
