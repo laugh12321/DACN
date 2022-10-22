@@ -8,6 +8,7 @@ Created on Jan 29, 2021
 @author: laugh12321
 @contact: laugh12321@vip.qq.com
 """
+import ast
 import sys
 import tensorflow as tf
 from src.model.attention import cbam_block
@@ -22,7 +23,7 @@ def _get_model(model_key: str, **kwargs):
     """
     # Get the list of all model creating functions and their name as the key:
     all_ = {
-        str(f): eval(f) for f in dir(sys.modules[__name__])
+        str(f): ast.literal_eval(f) for f in dir(sys.modules[__name__])
     }
     return all_[model_key](**kwargs)
 
