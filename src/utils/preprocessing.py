@@ -10,7 +10,6 @@ Created on Jan 29, 2021
 """
 import functools
 import numpy as np
-from itertools import product
 from typing import Tuple, Union, List
 
 from src.utils.utils import shuffle_arrays_together, get_label_indices_per_class
