@@ -22,10 +22,12 @@ def _get_model(model_key: str, **kwargs):
     :param kwargs: Any keyword arguments that the model accepts.
     """
     # Get the list of all model creating functions and their name as the key:
-    all_ = {
-        str(f): ast.literal_eval(f) for f in dir(sys.modules[__name__])
-    }
-    return all_[model_key](**kwargs)
+    all_models = {name: obj for name, obj in globals().items() if callable(obj)}
+    
+    if model_key not in all_models:
+        raise ValueError(f"Model {model_key} not found.")
+    
+    return all_models[model_key](**kwargs)
 
 
 def rnn_supervised(n_classes: int, input_size: int) -> tf.keras.Sequential:
